@@ -1,10 +1,20 @@
-package nucleo.model;
+package com.nucleo.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import java.util.List;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Meta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +27,4 @@ public class Meta {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
-
-    public Meta() {}
 }
