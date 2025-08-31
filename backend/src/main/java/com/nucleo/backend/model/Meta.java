@@ -1,10 +1,11 @@
-package com.nucleo.model;
+package com.nucleo.backend.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -13,21 +14,14 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transacao {
-    public enum Tipo { RECEITA, DESPESA }
-
+public class Meta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String descricao;
-    private BigDecimal valor;
-    private LocalDate data;
-
-    @Enumerated(EnumType.STRING)
-    private Tipo tipo;
-
-    private String categoria;
+    private String nome;
+    private BigDecimal valorAlvo;
+    private BigDecimal valorAtual;
+    private LocalDate dataAlvo;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
