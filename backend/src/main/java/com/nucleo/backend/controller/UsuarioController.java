@@ -1,5 +1,6 @@
 package com.nucleo.backend.controller;
 
+import com.nucleo.backend.dto.LoginRequest;
 import com.nucleo.backend.model.Usuario;
 import com.nucleo.backend.repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -129,5 +130,23 @@ public class UsuarioController {
         dashboard.put("alertas", List.of("Gasto com delivery acima da média"));
 
         return ResponseEntity.ok(dashboard);
+    }
+    @PostMapping("/login") // Mapeia para POST /api/usuarios/login
+    @Operation(summary = "Fazer login no sistema")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
+
+        // 1. Buscar usuário pelo email
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(loginRequest.getEmail());
+
+        // 2. Verificar se o usuário existe e se a senha confere
+        // (EM PRODUÇÃO, NUNCA armazene a senha em texto puro! Use criptografia!)
+        if (usuarioOptional.isEmpty() || !usuarioOptional.get().getSenha().equals(loginRequest.getSenha())) {
+            // Retorna erro 401 - Unauthorized
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email ou senha inválidos");
+        }
+
+        // 3. Se chegou aqui, o login é válido
+        Usuario usuario = usuarioOptional.get();
+        return ResponseEntity.ok("Login bem-sucedido! Bem-vindo, " + usuario.getNome());
     }
 }

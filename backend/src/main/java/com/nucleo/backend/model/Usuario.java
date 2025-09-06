@@ -42,14 +42,6 @@ public class Usuario {
     @Schema(description = "Região do usuário para cálculos de custo de vida", example = "Sudeste")
     private String regiao;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    @Schema(description = "Lista de transações do usuário")
-    private List<Transacao> transacoes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    @Schema(description = "Lista de metas financeiras do usuário")
-    private List<Meta> metas = new ArrayList<>();
-
 
     public Usuario(String nome, String email, String senha) {
         this.nome = nome;
