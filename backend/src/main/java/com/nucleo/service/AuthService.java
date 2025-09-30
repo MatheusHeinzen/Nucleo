@@ -69,13 +69,12 @@ public class AuthService {
                 throw new RuntimeException("Email já cadastrado");
             }
 
-            Usuario novoUsuario = Usuario.builder()
-                    .nome(request.getEmail().split("@")[0]) // Nome baseado no email
-                    .email(request.getEmail())
-                    .senha(passwordEncoder.encode(request.getSenha())) // 🔐 CODIFICAR SENHA
-                    .roles(Set.of(Usuario.Role.ROLE_USER)) // Role padrão
-                    .ativo(true)
-                    .build();
+            Usuario novoUsuario = new Usuario();
+            novoUsuario.setNome(request.getEmail().split("@")[0]);
+            novoUsuario.setEmail(request.getEmail());
+            novoUsuario.setSenha(passwordEncoder.encode(request.getSenha()));
+            novoUsuario.setRoles(Set.of(Usuario.Role.ROLE_USER));
+            novoUsuario.setAtivo(true);
 
             // Salvar usuário
             Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);

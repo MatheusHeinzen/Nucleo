@@ -91,7 +91,6 @@ public class UsuarioController {
         usuario.setNome(usuarioDetails.getNome());
         usuario.setEmail(usuarioDetails.getEmail());
         usuario.setSenha(usuarioDetails.getSenha());
-        usuario.setRegiao(usuarioDetails.getRegiao());
 
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
         return ResponseEntity.ok(usuarioAtualizado);
