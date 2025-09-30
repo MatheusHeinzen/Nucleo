@@ -1,21 +1,21 @@
-package com.nucleo.backend.model;
+package com.nucleo.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "usuarios")
+@Data
+@Builder // ✅ ESTA ANOTAÇÃO É ESSENCIAL
 @AllArgsConstructor
 @Schema(description = "Entidade que representa um usuário do sistema")
 public class Usuario {
@@ -41,6 +41,16 @@ public class Usuario {
 
     @Schema(description = "Região do usuário para cálculos de custo de vida", example = "Sudeste")
     private String regiao;
+
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<Role> roles;
+
+    private Boolean ativo = true;
+
+    public enum Role {
+        ROLE_USER, ROLE_ADMIN
+    }
 
 
     public Usuario(String nome, String email, String senha) {

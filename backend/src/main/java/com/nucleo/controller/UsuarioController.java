@@ -1,8 +1,8 @@
-package com.nucleo.backend.controller;
+package com.nucleo.controller;
 
-import com.nucleo.backend.dto.LoginRequest;
-import com.nucleo.backend.model.Usuario;
-import com.nucleo.backend.repository.UsuarioRepository;
+import com.nucleo.dto.LoginRequest;
+import com.nucleo.model.Usuario;
+import com.nucleo.repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -36,8 +36,7 @@ public class UsuarioController {
     })
     public ResponseEntity<Usuario> criarUsuario(@Valid @RequestBody Usuario usuario) {
         try {
-            // Verifica se email já existe
-            if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+            if (usuarioRepository.findByEmailAndAtivoTrue(usuario.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest().body(null);
             }
 
@@ -73,7 +72,7 @@ public class UsuarioController {
     @GetMapping("/email/{email}")
     @Operation(summary = "Buscar usuário pelo email")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail(@PathVariable String email) {
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+        Optional<Usuario> usuario = usuarioRepository.findByEmailAndAtivoTrue(email);
         return usuario.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -136,7 +135,7 @@ public class UsuarioController {
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
 
         // 1. Buscar usuário pelo email
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(loginRequest.getEmail());
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmailAndAtivoTrue(loginRequest.getEmail());
 
         // 2. Verificar se o usuário existe e se a senha confere
         // (EM PRODUÇÃO, NUNCA armazene a senha em texto puro! Use criptografia!)

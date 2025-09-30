@@ -1,4 +1,4 @@
-package com.nucleo.backend.dto;
+package com.nucleo.dto;
 
 public class LoginRequest {
     private String email;
