@@ -1,9 +1,11 @@
 package com.nucleo.controller;
 
 import com.nucleo.dto.TransacaoRequest;
+import com.nucleo.dto.TransacaoResponse;
 import com.nucleo.model.Transacao;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.service.TransacaoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +14,16 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transacoes")
+@Tag(name = "Transação", description = "Gerenciamento de usuários do sistema Nucleo")
 @RequiredArgsConstructor
 public class TransacaoController {
 
     private final TransacaoService transacaoService;
-    private final UsuarioRepository usuarioRepository; // ✅ PRECISAMOS BUSCAR O USUÁRIO
+    private final UsuarioRepository usuarioRepository;
 
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody TransacaoRequest request) {
@@ -82,25 +86,49 @@ public class TransacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    // Métodos específicos
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<TransacaoResponse>> listarPorUsuario(@PathVariable Long usuarioId) {
+        List<Transacao> transacoes = transacaoService.findByUsuarioId(usuarioId);
+        List<TransacaoResponse> response = transacoes.stream()
+                .map(TransacaoResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/usuario/{usuarioId}/periodo")
-    public ResponseEntity<List<Transacao>> buscarPorPeriodo(
+    public ResponseEntity<List<TransacaoResponse>> buscarPorPeriodo(
             @PathVariable Long usuarioId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
-        return ResponseEntity.ok(transacaoService.findByPeriodo(usuarioId, inicio, fim));
+
+        List<Transacao> transacoes = transacaoService.findByPeriodo(usuarioId, inicio, fim);
+        List<TransacaoResponse> response = transacoes.stream()
+                .map(TransacaoResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/categoria/{categoria}")
-    public ResponseEntity<List<Transacao>> buscarPorCategoria(
+    public ResponseEntity<List<TransacaoResponse>> buscarPorCategoria(
             @PathVariable Long usuarioId, @PathVariable Transacao.Categoria categoria) {
-        return ResponseEntity.ok(transacaoService.findByCategoria(usuarioId, categoria));
+
+        List<Transacao> transacoes = transacaoService.findByCategoria(usuarioId, categoria);
+        List<TransacaoResponse> response = transacoes.stream()
+                .map(TransacaoResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/tipo/{tipo}")
-    public ResponseEntity<List<Transacao>> buscarPorTipo(
+    public ResponseEntity<List<TransacaoResponse>> buscarPorTipo(
             @PathVariable Long usuarioId, @PathVariable Transacao.TipoTransacao tipo) {
-        return ResponseEntity.ok(transacaoService.findByTipo(usuarioId, tipo));
+
+        List<Transacao> transacoes = transacaoService.findByTipo(usuarioId, tipo);
+        List<TransacaoResponse> response = transacoes.stream()
+                .map(TransacaoResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/saldo")
