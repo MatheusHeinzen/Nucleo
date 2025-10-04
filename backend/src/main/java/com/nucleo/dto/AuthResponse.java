@@ -14,7 +14,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class AuthResponse {
     private String token;
-    private String tipo;
     private String email;
     private Set<Usuario.Role> roles;
 }

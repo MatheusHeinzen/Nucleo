@@ -21,10 +21,10 @@ public abstract class BaseEntity {
     private Long id;
 
     @CreatedDate
-    private LocalDateTime dataCriacao;
+    private LocalDateTime dataCriacao = LocalDateTime.now();
 
     @LastModifiedDate
-    private LocalDateTime dataAtualizacao;
+    private LocalDateTime dataAtualizacao ;
 
     @Column(nullable = false)
     private Boolean ativo = true;

@@ -27,7 +27,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public AuthResponse autenticar(AuthRequest request) {
-        // JÁ IMPLEMENTADO - mas vamos melhorar
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -42,7 +41,7 @@ public class AuthService {
             var jwtToken = jwtTokenProvider.generateToken(
                     new User(
                             usuario.getEmail(),
-                            usuario.getSenha(),
+                            usuario.getSenha(), // pode ser substituído por "" se não quiser carregar hash
                             usuario.getRoles().stream()
                                     .map(role -> new SimpleGrantedAuthority(role.name()))
                                     .collect(Collectors.toList())
@@ -50,14 +49,13 @@ public class AuthService {
             );
 
             return AuthResponse.builder()
-                    .token(jwtToken)
-                    .tipo("Bearer")
+                    .token("Bearer " + jwtToken) // ✅ corrigido
                     .email(usuario.getEmail())
                     .roles(usuario.getRoles())
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Credenciais inválidas");
+            throw new RuntimeException("Credenciais não válidas");
         }
     }
 
@@ -92,7 +90,6 @@ public class AuthService {
 
             return AuthResponse.builder()
                     .token(jwtToken)
-                    .tipo("Bearer")
                     .email(usuarioSalvo.getEmail())
                     .roles(usuarioSalvo.getRoles())
                     .build();

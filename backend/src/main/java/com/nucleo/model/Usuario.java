@@ -4,6 +4,7 @@ import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 @Entity
@@ -21,7 +22,7 @@ public class Usuario extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<Role> roles;
+    private Set<Role> roles = Set.of(Role.ROLE_USER);
 
     public enum Role {
         ROLE_USER, ROLE_ADMIN
