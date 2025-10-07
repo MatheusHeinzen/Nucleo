@@ -1,18 +1,17 @@
 package com.nucleo.repository;
 
 import com.nucleo.model.Categoria;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.nucleo.repository.generic.BaseRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
+public interface CategoriaRepository extends BaseRepository<Categoria, Long> {
 
-    // Spring Data JPA criará a query "SELECT * FROM categorias WHERE usuario_id = ?"
-    // Isso será essencial para a segurança da sua aplicação.
-    List<Categoria> findByUsuarioId(Long usuarioId);
+    List<Categoria> findByTipoAndAtivoTrue(Categoria.TipoCategoria tipo);
 
-    // Você pode adicionar mais queries customizadas aqui se precisar
+    Optional<Categoria> findByNome(String nome);
+
 }
-

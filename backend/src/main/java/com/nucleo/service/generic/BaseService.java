@@ -1,4 +1,3 @@
-// BaseService.java
 package com.nucleo.service.generic;
 
 import com.nucleo.model.base.BaseEntity;

@@ -2,7 +2,8 @@ package com.nucleo.controller;
 
 import com.nucleo.model.Categoria;
 import com.nucleo.service.CategoriaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,49 +11,51 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categorias")
+@RequestMapping("/api/categorias")
+@Tag(name = "Categorias", description = "Gerenciamento de Categorias Globais")
+@RequiredArgsConstructor
 public class CategoriaController {
 
-    @Autowired
-    private CategoriaService categoriaService;
+    private final CategoriaService categoriaService;
 
-
-    private Long getUsuarioIdLogado() {
-        return 1L; // Retorna um ID fixo para fins de desenvolvimento
-    }
-
+    // ✅ CATEGORIAS SÃO GLOBAIS - não precisa de usuário logado
+    // ❌ REMOVA o método getUsuarioIdLogado()
 
     @PostMapping
     public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria) {
-        categoria.setUsuarioId(getUsuarioIdLogado()); // Associa a categoria ao usuário
+        // ❌ NÃO seta usuarioId - categoria é global
         Categoria novaCategoria = categoriaService.criar(categoria);
         return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
     }
 
-
     @GetMapping
     public ResponseEntity<List<Categoria>> listar() {
-        List<Categoria> categorias = categoriaService.listarPorUsuario(getUsuarioIdLogado());
+        // ✅ Lista todas as categorias (globais)
+        List<Categoria> categorias = categoriaService.listarTodas();
         return ResponseEntity.ok(categorias);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Categoria> buscarPorId(@PathVariable Long id) {
-        Categoria categoria = categoriaService.buscarPorId(id, getUsuarioIdLogado());
+        Categoria categoria = categoriaService.buscarPorId(id);
         return ResponseEntity.ok(categoria);
     }
 
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<Categoria>> buscarPorTipo(@PathVariable Categoria.TipoCategoria tipo) {
+        List<Categoria> categorias = categoriaService.buscarPorTipo(tipo);
+        return ResponseEntity.ok(categorias);
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<Categoria> atualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
-        Categoria categoriaAtualizada = categoriaService.atualizar(id, categoria, getUsuarioIdLogado());
+        Categoria categoriaAtualizada = categoriaService.atualizar(id, categoria);
         return ResponseEntity.ok(categoriaAtualizada);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        categoriaService.deletar(id, getUsuarioIdLogado());
-        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+        categoriaService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.nucleo.repository;
 
+import com.nucleo.model.Categoria;
 import com.nucleo.model.Transacao;
 import com.nucleo.repository.generic.BaseRepository;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,7 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
 
     // Buscar por categoria
     List<Transacao> findAllByUsuarioIdAndCategoriaAndAtivoTrue(
-            Long usuarioId, Transacao.Categoria categoria);
+            Long usuarioId, Categoria categoria);
 
     // Buscar por tipo (entrada/saída)
     List<Transacao> findAllByUsuarioIdAndTipoAndAtivoTrue(

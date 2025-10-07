@@ -3,6 +3,7 @@ package com.nucleo.controller;
 import com.nucleo.dto.TransacaoRequest;
 import com.nucleo.dto.TransacaoResponse;
 import com.nucleo.model.Transacao;
+import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.service.TransacaoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,21 +25,23 @@ public class TransacaoController {
 
     private final TransacaoService transacaoService;
     private final UsuarioRepository usuarioRepository;
+    private final CategoriaRepository categoriaRepository;
 
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody TransacaoRequest request) {
         try {
-            // Buscar usuário
             var usuario = usuarioRepository.findByIdAndAtivoTrue(request.getUsuarioId())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            // Criar transação
+            var categoria = categoriaRepository.findByIdAndAtivoTrue(request.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
             Transacao transacao = Transacao.builder()
                     .descricao(request.getDescricao())
                     .valor(request.getValor())
                     .data(request.getData())
                     .tipo(request.getTipo())
-                    .categoria(request.getCategoria())
+                    .categoria(categoria)
                     .usuario(usuario)
                     .build();
 
@@ -55,20 +58,20 @@ public class TransacaoController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Buscar usuário
             var usuario = usuarioRepository.findByIdAndAtivoTrue(request.getUsuarioId())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            // Buscar transação existente
+            var categoria = categoriaRepository.findByIdAndAtivoTrue(request.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
             var transacaoExistente = transacaoService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
 
-            // Atualizar transação
             transacaoExistente.setDescricao(request.getDescricao());
             transacaoExistente.setValor(request.getValor());
             transacaoExistente.setData(request.getData());
             transacaoExistente.setTipo(request.getTipo());
-            transacaoExistente.setCategoria(request.getCategoria());
+            transacaoExistente.setCategoria(categoria);
             transacaoExistente.setUsuario(usuario);
 
             return ResponseEntity.ok(transacaoService.save(transacaoExistente));
@@ -108,9 +111,12 @@ public class TransacaoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/usuario/{usuarioId}/categoria/{categoria}")
+    @GetMapping("/usuario/{usuarioId}/categoria/{categoriaId}")
     public ResponseEntity<List<TransacaoResponse>> buscarPorCategoria(
-            @PathVariable Long usuarioId, @PathVariable Transacao.Categoria categoria) {
+            @PathVariable Long usuarioId, @PathVariable Long categoriaId) {
+
+        var categoria = categoriaRepository.findByIdAndAtivoTrue(categoriaId)
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
 
         List<Transacao> transacoes = transacaoService.findByCategoria(usuarioId, categoria);
         List<TransacaoResponse> response = transacoes.stream()
