@@ -1,8 +1,12 @@
 package com.nucleo.controller;
 
 import com.nucleo.model.Meta;
+import com.nucleo.model.Usuario;
+import com.nucleo.repository.UsuarioRepository;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,15 +14,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/metas")
+@RequestMapping("/api/metas")
+@Tag(name = "Metas", description = "Gerenciamento de metas.")
+@RequiredArgsConstructor
 public class MetaController {
 
-    @Autowired
-    private MetaService metaService;
+    private final MetaService metaService;
+    private final UsuarioRepository usuarioRepository;
 
-    // Método para simular o ID do usuário logado.
+    /**
+     * Obtém o ID do usuário logado
+     */
     private Long getUsuarioIdLogado() {
-        return 1L; // Substituir pela lógica de autenticação real
+        String email = SecurityUtils.getCurrentUserEmail();
+        if (email == null) {
+            throw new RuntimeException("Usuário não autenticado");
+        }
+
+        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        return usuario.getId();
     }
 
     /**
@@ -51,8 +67,6 @@ public class MetaController {
         Meta meta = metaService.buscarPorId(id, getUsuarioIdLogado());
         return ResponseEntity.ok(meta);
     }
-
-
 
     /**
      * Endpoint: PUT /metas/{id}
