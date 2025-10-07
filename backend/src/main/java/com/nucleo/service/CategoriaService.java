@@ -3,6 +3,7 @@ package com.nucleo.service;
 import com.nucleo.model.Categoria;
 import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.service.generic.BaseService;
+import com.nucleo.utils.EntityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,11 @@ public class CategoriaService extends BaseService<Categoria, Long, CategoriaRepo
 
     public Categoria atualizar(Long id, Categoria categoria) {
         Categoria categoriaExistente = buscarPorId(id);
+
+        EntityUtils.atualizarSeDiferente(categoriaExistente::setNome,categoria.getNome(), categoriaExistente.getNome());
+        EntityUtils.atualizarSeDiferente(categoriaExistente::setDescricao,categoria.getDescricao(), categoriaExistente.getDescricao());
+        EntityUtils.atualizarSeDiferente(categoriaExistente::setTipo,categoria.getTipo(), categoriaExistente.getTipo());
+
 
         categoriaExistente.setNome(categoria.getNome());
         categoriaExistente.setDescricao(categoria.getDescricao());

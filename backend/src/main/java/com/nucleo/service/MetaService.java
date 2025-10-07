@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
+
 
 @Service
 public class MetaService {
@@ -34,11 +36,13 @@ public class MetaService {
     public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {
         Meta metaExistente = buscarPorId(id, usuarioId);
 
-        metaExistente.setTitulo(metaAtualizada.getTitulo());
-        metaExistente.setValorAlvo(metaAtualizada.getValorAlvo());
-        metaExistente.setDataLimite(metaAtualizada.getDataLimite());
-        metaExistente.setCategoriaId(metaAtualizada.getCategoriaId());
-        metaExistente.setStatus(metaAtualizada.getStatus());
+
+
+        atualizarSeDiferente(metaExistente::setTitulo, metaAtualizada.getTitulo(), metaExistente.getTitulo());
+        atualizarSeDiferente(metaExistente::setValorAlvo, metaAtualizada.getValorAlvo(), metaExistente.getValorAlvo());
+        atualizarSeDiferente(metaExistente::setDataLimite, metaAtualizada.getDataLimite(), metaExistente.getDataLimite());
+        atualizarSeDiferente(metaExistente::setCategoriaId, metaAtualizada.getCategoriaId(), metaExistente.getCategoriaId());
+        atualizarSeDiferente(metaExistente::setStatus, metaAtualizada.getStatus(), metaExistente.getStatus());
 
         return metaRepository.save(metaExistente);
     }
