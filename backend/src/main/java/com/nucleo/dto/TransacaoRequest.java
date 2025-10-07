@@ -1,4 +1,3 @@
-// TransacaoRequest.java
 package com.nucleo.dto;
 
 import com.nucleo.model.Transacao;
@@ -13,6 +12,6 @@ public class TransacaoRequest {
     private BigDecimal valor;
     private LocalDate data;
     private Transacao.TipoTransacao tipo;
-    private Transacao.Categoria categoria;
+    private Long categoriaId;
     private Long usuarioId;
 }

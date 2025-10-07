@@ -1,5 +1,6 @@
 package com.nucleo.service;
 
+import com.nucleo.model.Categoria;
 import com.nucleo.model.Transacao;
 import com.nucleo.repository.TransacaoRepository;
 import com.nucleo.service.generic.BaseService;
@@ -31,7 +32,7 @@ public class TransacaoService extends BaseService<Transacao, Long, TransacaoRepo
         return repository.findAllByUsuarioIdAndDataBetweenAndAtivoTrue(usuarioId, inicio, fim);
     }
 
-    public List<Transacao> findByCategoria(Long usuarioId, Transacao.Categoria categoria) {
+    public List<Transacao> findByCategoria(Long usuarioId, Categoria categoria) {
         return repository.findAllByUsuarioIdAndCategoriaAndAtivoTrue(usuarioId, categoria);
     }
 

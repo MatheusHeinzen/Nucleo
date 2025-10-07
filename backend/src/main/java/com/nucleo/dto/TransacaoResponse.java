@@ -14,7 +14,8 @@ public class TransacaoResponse {
     private BigDecimal valor;
     private LocalDate data;
     private Transacao.TipoTransacao tipo;
-    private Transacao.Categoria categoria;
+    private Long categoriaId;
+    private String categoriaNome;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
     private Long usuarioId;
@@ -27,7 +28,8 @@ public class TransacaoResponse {
         response.setValor(transacao.getValor());
         response.setData(transacao.getData());
         response.setTipo(transacao.getTipo());
-        response.setCategoria(transacao.getCategoria());
+        response.setCategoriaId(transacao.getCategoria().getId());
+        response.setCategoriaNome(transacao.getCategoria().getNome());
         response.setDataCriacao(transacao.getDataCriacao());
         response.setDataAtualizacao(transacao.getDataAtualizacao());
         response.setUsuarioId(transacao.getUsuario().getId());

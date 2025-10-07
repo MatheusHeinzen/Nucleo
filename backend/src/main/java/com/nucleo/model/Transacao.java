@@ -29,28 +29,19 @@ public class Transacao extends BaseEntity {
     @Column(nullable = false)
     private TipoTransacao tipo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Categoria categoria;
 
     // Relacionamento com Usuario
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    // ✅ RELACIONAMENTO COM CATEGORIA GLOBAL
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
+
     public enum TipoTransacao {
         ENTRADA, SAIDA
     }
 
-    public enum Categoria {
-        ALIMENTACAO,
-        TRANSPORTE,
-        MORADIA,
-        SAUDE,
-        EDUCACAO,
-        LAZER,
-        SALARIO,
-        INVESTIMENTOS,
-        OUTROS
-    }
 }
