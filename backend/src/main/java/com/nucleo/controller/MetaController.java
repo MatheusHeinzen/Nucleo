@@ -5,6 +5,7 @@ import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
+import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,21 +22,8 @@ public class MetaController {
 
     private final MetaService metaService;
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
-    /**
-     * Obtém o ID do usuário logado
-     */
-    private Long getUsuarioIdLogado() {
-        String email = SecurityUtils.getCurrentUserEmail();
-        if (email == null) {
-            throw new RuntimeException("Usuário não autenticado");
-        }
-
-        Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        return usuario.getId();
-    }
 
     /**
      * Endpoint: POST /metas
@@ -43,7 +31,7 @@ public class MetaController {
      */
     @PostMapping
     public ResponseEntity<Meta> criar(@RequestBody Meta meta) {
-        meta.setUsuarioId(getUsuarioIdLogado());
+        meta.setUsuarioId(usuarioService.getUsuarioIdLogado());
         Meta novaMeta = metaService.criar(meta);
         return new ResponseEntity<>(novaMeta, HttpStatus.CREATED);
     }
@@ -54,7 +42,7 @@ public class MetaController {
      */
     @GetMapping
     public ResponseEntity<List<Meta>> listar() {
-        List<Meta> metas = metaService.listarPorUsuario(getUsuarioIdLogado());
+        List<Meta> metas = metaService.listarPorUsuario(usuarioService.getUsuarioIdLogado());
         return ResponseEntity.ok(metas);
     }
 
@@ -64,7 +52,7 @@ public class MetaController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
-        Meta meta = metaService.buscarPorId(id, getUsuarioIdLogado());
+        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
         return ResponseEntity.ok(meta);
     }
 
@@ -74,7 +62,7 @@ public class MetaController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta) {
-        Meta metaAtualizada = metaService.atualizar(id, meta, getUsuarioIdLogado());
+        Meta metaAtualizada = metaService.atualizar(id, meta, usuarioService.getUsuarioIdLogado());
         return ResponseEntity.ok(metaAtualizada);
     }
 
@@ -84,7 +72,7 @@ public class MetaController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        metaService.cancelar(id, getUsuarioIdLogado());
+        metaService.cancelar(id, usuarioService.getUsuarioIdLogado());
         return ResponseEntity.noContent().build();
     }
 }

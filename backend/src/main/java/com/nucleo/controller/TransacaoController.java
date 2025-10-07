@@ -6,7 +6,9 @@ import com.nucleo.model.Transacao;
 import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.service.TransacaoService;
+import com.nucleo.utils.EntityUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.Entity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.nucleo.utils.EntityUtils;
+
 
 @RestController
 @RequestMapping("/api/transacoes")
@@ -67,12 +71,14 @@ public class TransacaoController {
             var transacaoExistente = transacaoService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
 
-            transacaoExistente.setDescricao(request.getDescricao());
-            transacaoExistente.setValor(request.getValor());
-            transacaoExistente.setData(request.getData());
-            transacaoExistente.setTipo(request.getTipo());
-            transacaoExistente.setCategoria(categoria);
-            transacaoExistente.setUsuario(usuario);
+
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setDescricao,request.getDescricao(),transacaoExistente.getDescricao());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setValor,request.getValor(),transacaoExistente.getValor());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setData,request.getData(),transacaoExistente.getData());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setTipo,request.getTipo(),transacaoExistente.getTipo());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setCategoria,categoria,transacaoExistente.getCategoria());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setUsuario,usuario,transacaoExistente.getUsuario());
+
 
             return ResponseEntity.ok(transacaoService.save(transacaoExistente));
         } catch (Exception e) {
