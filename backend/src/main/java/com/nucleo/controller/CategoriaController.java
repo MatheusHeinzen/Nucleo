@@ -1,5 +1,6 @@
 package com.nucleo.controller;
 
+import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.service.CategoriaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,19 +19,19 @@ public class CategoriaController {
 
     private final CategoriaService categoriaService;
 
-    // ✅ CATEGORIAS SÃO GLOBAIS - não precisa de usuário logado
-    // ❌ REMOVA o método getUsuarioIdLogado()
 
     @PostMapping
     public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria) {
-        // ❌ NÃO seta usuarioId - categoria é global
         Categoria novaCategoria = categoriaService.criar(categoria);
-        return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
+        if(novaCategoria != null) {
+
+            return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
+        }
+        throw new EntityNotCreatedException("categoria.not-created");
     }
 
     @GetMapping
     public ResponseEntity<List<Categoria>> listar() {
-        // ✅ Lista todas as categorias (globais)
         List<Categoria> categorias = categoriaService.listarTodas();
         return ResponseEntity.ok(categorias);
     }

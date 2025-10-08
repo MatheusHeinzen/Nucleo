@@ -1,12 +1,8 @@
 package com.nucleo.controller;
 
-import com.nucleo.dto.LoginRequest;
 import com.nucleo.model.Usuario;
-import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.SecurityUtils;
-import com.nucleo.service.AuthService;
 import com.nucleo.service.UsuarioService;
-import com.nucleo.utils.EntityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,11 +11,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 
