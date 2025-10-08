@@ -1,15 +1,11 @@
 package com.nucleo.service;
 
 import com.nucleo.model.Usuario;
-import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.generic.BaseService;
 import com.nucleo.utils.EntityUtils;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;

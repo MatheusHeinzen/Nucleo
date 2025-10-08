@@ -1,9 +1,7 @@
 package com.nucleo.controller;
 
 import com.nucleo.model.Meta;
-import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
-import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
 import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -70,9 +68,11 @@ public class MetaController {
      * Endpoint: DELETE /metas/{id}
      * Cancela uma meta (altera seu status para 'cancelada').
      */
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         metaService.cancelar(id, usuarioService.getUsuarioIdLogado());
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -2,6 +2,9 @@ package com.nucleo.service;
 
 import com.nucleo.dto.AuthRequest;
 import com.nucleo.dto.AuthResponse;
+import com.nucleo.exception.AuthenticationException;
+import com.nucleo.exception.EntityNotCreatedException;
+import com.nucleo.exception.ResourceNotFoundException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.JwtTokenProvider;
@@ -26,7 +29,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthResponse autenticar(AuthRequest request) {
+    public AuthResponse autenticar(AuthRequest request) throws AuthenticationException {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -36,12 +39,12 @@ public class AuthService {
             );
 
             var usuario = usuarioRepository.findByEmailAndAtivoTrue(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("usuario.not-found"));
 
             var jwtToken = jwtTokenProvider.generateToken(
                     new User(
                             usuario.getEmail(),
-                            usuario.getSenha(), // pode ser substituído por "" se não quiser carregar hash
+                            "", // pode ser substituído por "" se não quiser carregar hash
                             usuario.getRoles().stream()
                                     .map(role -> new SimpleGrantedAuthority(role.name()))
                                     .collect(Collectors.toList())
@@ -49,22 +52,21 @@ public class AuthService {
             );
 
             return AuthResponse.builder()
-                    .token("Bearer " + jwtToken) // ✅ corrigido
+                    .token("Bearer " + jwtToken)
                     .email(usuario.getEmail())
                     .roles(usuario.getRoles())
                     .build();
 
-        } catch (Exception e) {
-            throw new RuntimeException("Credenciais não válidas");
+        } catch (AuthenticationException e) {
+            throw new ResourceNotFoundException("login.login-failed");
         }
     }
 
-    public AuthResponse registrar(AuthRequest request) {
-        // ✅ AGORA VAMOS IMPLEMENTAR O REGISTRO
+    public AuthResponse registrar(AuthRequest request) throws EntityNotCreatedException {
         try {
-            // Verificar se email já existe
+
             if (usuarioRepository.findByEmailAndAtivoTrue(request.getEmail()).isPresent()) {
-                throw new RuntimeException("Email já cadastrado");
+                throw new EntityNotCreatedException("register.user_exists");
             }
 
             Usuario novoUsuario = new Usuario();
@@ -95,7 +97,7 @@ public class AuthService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao registrar usuário: " + e.getMessage());
+            throw new EntityNotCreatedException("register.user_Creation-failed");
         }
     }
 }

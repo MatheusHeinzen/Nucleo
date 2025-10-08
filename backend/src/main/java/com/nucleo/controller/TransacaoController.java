@@ -8,7 +8,6 @@ import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.service.TransacaoService;
 import com.nucleo.utils.EntityUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.Entity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.nucleo.utils.EntityUtils;
 
 
 @RestController

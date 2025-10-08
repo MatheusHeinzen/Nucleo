@@ -2,6 +2,8 @@ package com.nucleo.controller;
 
 import com.nucleo.dto.AuthRequest;
 import com.nucleo.dto.AuthResponse;
+import com.nucleo.exception.AuthenticationException;
+import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,24 +19,25 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) throws AuthenticationException {
         try {
+
             AuthResponse response = authService.autenticar(request);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(401)
-                    .body("Erro no login: " + e.getMessage());
+        } catch (AuthenticationException e) {
+//            return ResponseEntity.badRequest().body("entrou no login");
+            throw new AuthenticationException("login.login-failed");
         }
     }
 
+
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrar(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> registrar(@RequestBody AuthRequest request)  throws EntityNotCreatedException {
         try {
             AuthResponse response = authService.registrar(request);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(400)
-                    .body("Erro no registro: " + e.getMessage());
+        } catch (EntityNotCreatedException e) {
+            throw new EntityNotCreatedException("error.user_Creation-failed");
         }
     }
 }
