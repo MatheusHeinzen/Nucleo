@@ -1,58 +1,86 @@
 package com.nucleo.service;
 
+import com.nucleo.exception.EntityNotCreatedException;
+import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.repository.CategoriaRepository;
-import com.nucleo.service.generic.BaseService;
 import com.nucleo.utils.EntityUtils;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
+
 @Service
-public class CategoriaService extends BaseService<Categoria, Long, CategoriaRepository> {
+public class CategoriaService {
 
-    public CategoriaService(CategoriaRepository repository) {
-        super(repository);
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    public Categoria criar(Categoria categoria) throws EntityNotCreatedException {
+        try{
+            Categoria novaCategoria = categoriaRepository.save(categoria);
+            if (novaCategoria == null) {
+                throw new EntityNotCreatedException("categoria.not-created");
+            }
+            return novaCategoria;
+        }catch (Exception e) {
+            throw new EntityNotCreatedException("categoria.not-created");
+        }
     }
 
-    // ✅ O @RequiredArgsConstructor já injeta o repository automaticamente
-    // O BaseService já recebe o repository via construtor da classe pai
-
-    // Métodos específicos da Categoria
-    public Categoria criar(Categoria categoria) {
-        return save(categoria);
+    public List<Categoria> listarTodas() throws EntityNotFoundException{
+        try{
+        return categoriaRepository.findAllByAtivoTrue();
+        }catch (Exception e) {
+            throw new EntityNotFoundException("categoria.not-found");
+        }
     }
 
-    public List<Categoria> listarTodas() {
-        return findAll();
+    public Categoria buscarPorId(Long id) throws EntityNotFoundException{
+        try{
+            return categoriaRepository.findByIdAndAtivoTrue(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
+        }
+        catch (Exception e) {
+            throw new EntityNotFoundException("categoria.not-found");
+        }
     }
 
-    public Categoria buscarPorId(Long id) {
-        return findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+    public List<Categoria> buscarPorTipo(Categoria.TipoCategoria tipo) throws EntityNotFoundException {
+        try{
+            return categoriaRepository.findByTipoAndAtivoTrue(tipo);
+        }catch (Exception e){
+            throw new EntityNotFoundException("categoria.not-found");
+        }
     }
 
-    public List<Categoria> buscarPorTipo(Categoria.TipoCategoria tipo) {
-        return repository.findByTipoAndAtivoTrue(tipo);
+    public Categoria atualizar(Long id, Categoria categoriaAtualizada) throws EntityNotUpdatedException {
+        try{
+
+        Categoria existente = buscarPorId(id);
+
+        atualizarSeDiferente(existente::setNome, categoriaAtualizada.getNome(), existente.getNome());
+        atualizarSeDiferente(existente::setDescricao, categoriaAtualizada.getDescricao(), existente.getDescricao());
+        atualizarSeDiferente(existente::setTipo, categoriaAtualizada.getTipo(), existente.getTipo());
+
+        return categoriaRepository.save(existente);
+        }catch (EntityNotFoundException e) {
+            throw new EntityNotUpdatedException("categoria.not-found");
+        }catch (Exception e) {
+            throw new EntityNotUpdatedException("categoria.not-updated");
+        }
     }
 
-    public Categoria atualizar(Long id, Categoria categoria) {
-        Categoria categoriaExistente = buscarPorId(id);
-
-        EntityUtils.atualizarSeDiferente(categoriaExistente::setNome,categoria.getNome(), categoriaExistente.getNome());
-        EntityUtils.atualizarSeDiferente(categoriaExistente::setDescricao,categoria.getDescricao(), categoriaExistente.getDescricao());
-        EntityUtils.atualizarSeDiferente(categoriaExistente::setTipo,categoria.getTipo(), categoriaExistente.getTipo());
-
-
-        categoriaExistente.setNome(categoria.getNome());
-        categoriaExistente.setDescricao(categoria.getDescricao());
-        categoriaExistente.setTipo(categoria.getTipo());
-
-        return save(categoriaExistente);
-    }
-
-    public void deletar(Long id) {
-        delete(id); // Soft delete
+    public void deletar(Long id) throws EntityNotDeletedException {
+        try{
+            categoriaRepository.softDelete(id);
+        }catch (Exception e) {
+            throw new EntityNotDeletedException("categoria.not-deleted");
+        }
+        // supondo que é soft delete mesmo
     }
 }

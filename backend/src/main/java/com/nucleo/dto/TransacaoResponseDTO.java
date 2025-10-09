@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class TransacaoResponse {
+public class TransacaoResponseDTO {
     private Long id;
     private String descricao;
     private BigDecimal valor;
@@ -21,8 +21,8 @@ public class TransacaoResponse {
     private Long usuarioId;
     private String usuarioNome;
 
-    public static TransacaoResponse fromEntity(Transacao transacao) {
-        TransacaoResponse response = new TransacaoResponse();
+    public static TransacaoResponseDTO fromEntity(Transacao transacao) {
+        TransacaoResponseDTO response = new TransacaoResponseDTO();
         response.setId(transacao.getId());
         response.setDescricao(transacao.getDescricao());
         response.setValor(transacao.getValor());

@@ -1,7 +1,7 @@
 package com.nucleo.controller;
 
-import com.nucleo.dto.TransacaoRequest;
-import com.nucleo.dto.TransacaoResponse;
+import com.nucleo.dto.TransacaoRequestDTO;
+import com.nucleo.dto.TransacaoResponseDTO;
 import com.nucleo.model.Transacao;
 import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.repository.UsuarioRepository;
@@ -30,7 +30,7 @@ public class TransacaoController {
     private final CategoriaRepository categoriaRepository;
 
     @PostMapping
-    public ResponseEntity<?> criar(@RequestBody TransacaoRequest request) {
+    public ResponseEntity<?> criar(@RequestBody TransacaoRequestDTO request) {
         try {
             var usuario = usuarioRepository.findByIdAndAtivoTrue(request.getUsuarioId())
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -54,7 +54,7 @@ public class TransacaoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequest request) {
+    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
         try {
             if (!transacaoService.exists(id)) {
                 return ResponseEntity.notFound().build();
@@ -94,48 +94,48 @@ public class TransacaoController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<TransacaoResponse>> listarPorUsuario(@PathVariable Long usuarioId) {
+    public ResponseEntity<List<TransacaoResponseDTO>> listarPorUsuario(@PathVariable Long usuarioId) {
         List<Transacao> transacoes = transacaoService.findByUsuarioId(usuarioId);
-        List<TransacaoResponse> response = transacoes.stream()
-                .map(TransacaoResponse::fromEntity)
+        List<TransacaoResponseDTO> response = transacoes.stream()
+                .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/periodo")
-    public ResponseEntity<List<TransacaoResponse>> buscarPorPeriodo(
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorPeriodo(
             @PathVariable Long usuarioId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
 
         List<Transacao> transacoes = transacaoService.findByPeriodo(usuarioId, inicio, fim);
-        List<TransacaoResponse> response = transacoes.stream()
-                .map(TransacaoResponse::fromEntity)
+        List<TransacaoResponseDTO> response = transacoes.stream()
+                .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/categoria/{categoriaId}")
-    public ResponseEntity<List<TransacaoResponse>> buscarPorCategoria(
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorCategoria(
             @PathVariable Long usuarioId, @PathVariable Long categoriaId) {
 
         var categoria = categoriaRepository.findByIdAndAtivoTrue(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
 
         List<Transacao> transacoes = transacaoService.findByCategoria(usuarioId, categoria);
-        List<TransacaoResponse> response = transacoes.stream()
-                .map(TransacaoResponse::fromEntity)
+        List<TransacaoResponseDTO> response = transacoes.stream()
+                .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/tipo/{tipo}")
-    public ResponseEntity<List<TransacaoResponse>> buscarPorTipo(
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorTipo(
             @PathVariable Long usuarioId, @PathVariable Transacao.TipoTransacao tipo) {
 
         List<Transacao> transacoes = transacaoService.findByTipo(usuarioId, tipo);
-        List<TransacaoResponse> response = transacoes.stream()
-                .map(TransacaoResponse::fromEntity)
+        List<TransacaoResponseDTO> response = transacoes.stream()
+                .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);

@@ -1,7 +1,7 @@
 package com.nucleo.controller;
 
-import com.nucleo.dto.AuthRequest;
-import com.nucleo.dto.AuthResponse;
+import com.nucleo.dto.AuthRequestDTO;
+import com.nucleo.dto.AuthResponseDTO;
 import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.service.AuthService;
@@ -19,25 +19,15 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) throws AuthenticationException {
-        try {
-
-            AuthResponse response = authService.autenticar(request);
-            return ResponseEntity.ok(response);
-        } catch (AuthenticationException e) {
-//            return ResponseEntity.badRequest().body("entrou no login");
-            throw new AuthenticationException("login.login-failed");
-        }
+    public ResponseEntity<?> login(@RequestBody AuthRequestDTO request) {
+        AuthResponseDTO response = authService.autenticar(request);
+        return ResponseEntity.ok(response);
     }
 
 
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrar(@RequestBody AuthRequest request)  throws EntityNotCreatedException {
-        try {
-            AuthResponse response = authService.registrar(request);
-            return ResponseEntity.ok(response);
-        } catch (EntityNotCreatedException e) {
-            throw new EntityNotCreatedException("error.user_Creation-failed");
-        }
+    public ResponseEntity<?> registrar(@RequestBody AuthRequestDTO request) throws EntityNotCreatedException {
+        AuthResponseDTO response = authService.registrar(request);
+        return ResponseEntity.ok(response);
     }
 }

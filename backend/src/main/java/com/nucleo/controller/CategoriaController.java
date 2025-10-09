@@ -23,11 +23,7 @@ public class CategoriaController {
     @PostMapping
     public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria) {
         Categoria novaCategoria = categoriaService.criar(categoria);
-        if(novaCategoria != null) {
-
-            return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
-        }
-        throw new EntityNotCreatedException("categoria.not-created");
+        return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
     }
 
     @GetMapping

@@ -2,6 +2,7 @@ package com.nucleo.repository;
 
 import com.nucleo.model.Categoria;
 import com.nucleo.model.Transacao;
+import com.nucleo.model.Usuario;
 import com.nucleo.repository.generic.BaseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,9 @@ import java.util.List;
 
 @Repository
 public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
+
+    Transacao findTransacaoByUsuario_Id(Long id);
+    Transacao findTransacaoByUsuario_IdAndId(Long usuarioId, Long id);
 
     // Buscar transações por usuário
     List<Transacao> findAllByUsuarioIdAndAtivoTrue(Long usuarioId);

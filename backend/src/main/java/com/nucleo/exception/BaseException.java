@@ -17,6 +17,7 @@ public abstract class BaseException extends RuntimeException {
         this.status = status;
     }
 
+
     public String resolveMessage(MessageSource messageSource) {
         return messageSource.getMessage(messageKey, messageArgs, LocaleContextHolder.getLocale());
     }

@@ -29,7 +29,6 @@ public class Transacao extends BaseEntity {
     @Column(nullable = false)
     private TipoTransacao tipo;
 
-
     // Relacionamento com Usuario
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)

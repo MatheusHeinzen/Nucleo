@@ -33,22 +33,25 @@ public class UsuarioController {
     @GetMapping("/All")
     @Operation(summary = "Listar todos os usuários")
     public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
-        List<Usuario> usuarios = usuarioService.findAll();
+        List<Usuario> usuarios = usuarioService.encontraTodos();
         return ResponseEntity.ok(usuarios);
     }
 
-    // READ - Buscar usuário por ID
-    @GetMapping("/{id}")
-    @Operation(summary = "Buscar usuário pelo ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    })
-    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
-        Optional<Usuario> usuario = usuarioService.findById(id);
-        return usuario.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+//    // READ - Buscar usuário por ID
+//    @GetMapping("/{id}")
+//    @Operation(summary = "Buscar usuário pelo ID")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
+//            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+//    })
+//    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
+//
+//
+//        Optional<Usuario> usuario = usuarioService.getUsuarioIdLogado();
+//        return usuario.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//
+//    }
 
     // READ - Buscar usuário por Email
     @GetMapping("/me")
@@ -66,8 +69,8 @@ public class UsuarioController {
 //    @PreAuthorize("#id == authentication.principal.id or hasRo    le('ADMIN')")
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar um usuário existente")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @Valid @RequestBody Usuario usuarioDetails) {
-        Usuario usuario = usuarioService.atualizaUsuario(id,usuarioDetails);
+    public ResponseEntity<Usuario> atualizarUsuario( @Valid @RequestBody Usuario usuarioDetails) {
+        Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
@@ -79,11 +82,9 @@ public class UsuarioController {
     @DeleteMapping
     @Operation(summary = "Deletar um usuário")
     public ResponseEntity<String> deletarUsuario() {
-        boolean deletou = usuarioService.deletaUsuario(getCurrentUserEmail());
-        if(deletou){
+        usuarioService.deletaUsuario();
         return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+
     }
 
 

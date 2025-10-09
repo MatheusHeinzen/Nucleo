@@ -1,7 +1,7 @@
 package com.nucleo.service;
 
-import com.nucleo.dto.AuthRequest;
-import com.nucleo.dto.AuthResponse;
+import com.nucleo.dto.AuthRequestDTO;
+import com.nucleo.dto.AuthResponseDTO;
 import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.ResourceNotFoundException;
@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthResponse autenticar(AuthRequest request) throws AuthenticationException {
+    public AuthResponseDTO autenticar(AuthRequestDTO request) throws AuthenticationException {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -51,7 +50,7 @@ public class AuthService {
                     )
             );
 
-            return AuthResponse.builder()
+            return AuthResponseDTO.builder()
                     .token("Bearer " + jwtToken)
                     .email(usuario.getEmail())
                     .roles(usuario.getRoles())
@@ -62,7 +61,7 @@ public class AuthService {
         }
     }
 
-    public AuthResponse registrar(AuthRequest request) throws EntityNotCreatedException {
+    public AuthResponseDTO registrar(AuthRequestDTO request) throws EntityNotCreatedException {
         try {
 
             if (usuarioRepository.findByEmailAndAtivoTrue(request.getEmail()).isPresent()) {
@@ -90,7 +89,7 @@ public class AuthService {
                     )
             );
 
-            return AuthResponse.builder()
+            return AuthResponseDTO.builder()
                     .token(jwtToken)
                     .email(usuarioSalvo.getEmail())
                     .roles(usuarioSalvo.getRoles())

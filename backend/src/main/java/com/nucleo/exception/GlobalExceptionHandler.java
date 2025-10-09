@@ -22,8 +22,7 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(BaseException.class)
-    public ResponseEntity<ErrorResponse> handleBaseException(
-            BaseException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex, HttpServletRequest request) {
 
         String mensagem = ex.resolveMessage(messageSource);
 
@@ -81,6 +80,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotCreatedException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotCreated(EntityNotCreatedException ex, jakarta.servlet.http.HttpServletRequest request) {
+        return handleBaseException(ex, request);
+    }
+
+    @ExceptionHandler(EntityNotUpdatedException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotUpdated(EntityNotUpdatedException ex, jakarta.servlet.http.HttpServletRequest request) {
+        return handleBaseException(ex, request);
+    }
+
+    @ExceptionHandler(EntityNotDeletedException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotDeleted(EntityNotDeletedException ex, jakarta.servlet.http.HttpServletRequest request){
         return handleBaseException(ex, request);
     }
 

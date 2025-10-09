@@ -44,15 +44,15 @@ public class MetaController {
         return ResponseEntity.ok(metas);
     }
 
-    /**
-     * Endpoint: GET /metas/{id}
-     * Busca uma meta específica pelo seu ID.
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
-        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
-        return ResponseEntity.ok(meta);
-    }
+//    /**
+//     * Endpoint: GET /metas/{id}
+//     * Busca uma meta específica pelo seu ID.
+//     */
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
+//        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
+//        return ResponseEntity.ok(meta);
+//    }
 
     /**
      * Endpoint: PUT /metas/{id}

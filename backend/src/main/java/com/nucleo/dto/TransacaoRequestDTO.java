@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class TransacaoRequest {
+public class TransacaoRequestDTO {
     private String descricao;
     private BigDecimal valor;
     private LocalDate data;
