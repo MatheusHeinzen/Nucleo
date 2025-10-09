@@ -1,6 +1,7 @@
 package com.nucleo.service;
 
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.SecurityUtils;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
+import static com.nucleo.security.SecurityUtils.getCurrentUserId;
 
 
 @Service
@@ -36,31 +38,15 @@ public class UsuarioService  {
         }
     }
 
-    public Long getUsuarioIdLogado() throws EntityNotFoundException {
-        try{
-            String email = SecurityUtils.getCurrentUserEmail();
-            if (email == null) {
-                throw new RuntimeException("Usuário não autenticado");
-            }
-
-            Usuario usuario = usuarioRepository.findByEmailAndAtivoTrue(email)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-            return usuario.getId();
-        } catch (Exception e) {
-            throw new EntityNotFoundException("usuario.not-found");
-        }
-
+    public Long getUsuarioIdLogado(){
+        return getCurrentUserId();
     }
 
-    public Usuario buscarUsuarioPorEmail(String email) {
+    public Usuario buscarUsuarioPorEmail(String email) throws EntityNotFoundException {
         try{
             Optional<Usuario> usuario = usuarioRepository.findByEmailAndAtivoTrue(getCurrentUserEmail());
-            if(usuario.isPresent()){
-                return usuario.get();
-            }else{
-                return null;
-            }
+            Usuario u =  usuario.get();
+            return u;
         }catch (Exception e){
             return null;
         }
@@ -78,13 +64,13 @@ public class UsuarioService  {
 
     }
 
-    public Usuario atualizaUsuario( @Valid @RequestBody Usuario usuarioDetails) {
+    public Usuario atualizaUsuario( @Valid @RequestBody Usuario usuarioDetails) throws EntityNotUpdatedException {
 
         try{
             Optional<Usuario> usuarioOptional = usuarioRepository.findByEmailAndAtivoTrue(usuarioDetails.getEmail());
 
             if (usuarioOptional.isEmpty()) {
-                return null;
+                throw new EntityNotUpdatedException("usuario.not-found");
             }
 
             Usuario usuario = usuarioOptional.get();
@@ -97,8 +83,8 @@ public class UsuarioService  {
             return usuarioRepository.save(usuario);
 
         }catch (Exception e){
-            e.printStackTrace();
-            return null;
+
+            throw new  EntityNotUpdatedException("usuario.not-updated");
         }
 
     }

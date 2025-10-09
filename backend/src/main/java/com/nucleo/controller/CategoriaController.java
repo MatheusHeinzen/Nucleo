@@ -1,6 +1,5 @@
 package com.nucleo.controller;
 
-import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.service.CategoriaService;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -30,8 +30,8 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
             Long usuarioId, LocalDate inicio, LocalDate fim);
 
     // Buscar por categoria
-    List<Transacao> findAllByUsuarioIdAndCategoriaAndAtivoTrue(
-            Long usuarioId, Categoria categoria);
+
+    List<Transacao> findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(Long usuarioId, Long categoriaId);
 
     // Buscar por tipo (entrada/saída)
     List<Transacao> findAllByUsuarioIdAndTipoAndAtivoTrue(
@@ -40,4 +40,11 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
     // Soma de valores por tipo
     @Query("SELECT COALESCE(SUM(t.valor), 0) FROM Transacao t WHERE t.usuario.id = :usuarioId AND t.tipo = :tipo AND t.ativo = true")
     BigDecimal sumValorByUsuarioIdAndTipo(@Param("usuarioId") Long usuarioId, @Param("tipo") Transacao.TipoTransacao tipo);
+
+    @Query("SELECT t FROM Transacao t WHERE t.usuario.id = :usuarioId AND t.data BETWEEN :inicio AND :fim")
+    List<Transacao> findByUsuarioAndPeriodo(
+            @Param("usuarioId") Long usuarioId,
+            @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim
+    );
 }

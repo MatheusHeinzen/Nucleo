@@ -42,6 +42,7 @@ public class JwtTokenProvider {
 
         claims.put("roles", authorities);
 
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())

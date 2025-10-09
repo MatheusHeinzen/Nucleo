@@ -4,8 +4,6 @@ import com.nucleo.model.Usuario;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 
@@ -36,22 +33,6 @@ public class UsuarioController {
         List<Usuario> usuarios = usuarioService.encontraTodos();
         return ResponseEntity.ok(usuarios);
     }
-
-//    // READ - Buscar usuário por ID
-//    @GetMapping("/{id}")
-//    @Operation(summary = "Buscar usuário pelo ID")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
-//            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-//    })
-//    public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id) {
-//
-//
-//        Optional<Usuario> usuario = usuarioService.getUsuarioIdLogado();
-//        return usuario.map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//
-//    }
 
     // READ - Buscar usuário por Email
     @GetMapping("/me")
