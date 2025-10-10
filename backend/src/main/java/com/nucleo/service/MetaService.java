@@ -1,20 +1,22 @@
 package com.nucleo.service;
 
+import com.nucleo.dto.MetaRequestDTO;
+import com.nucleo.dto.MetaResponseDTO;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Meta;
 import com.nucleo.model.StatusMeta;
 import com.nucleo.repository.MetaRepository;
-import jakarta.persistence.EntityExistsException;
+import com.nucleo.security.SecurityUtils;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
-
 
 @Service
 public class MetaService {
@@ -22,57 +24,58 @@ public class MetaService {
     @Autowired
     private MetaRepository metaRepository;
 
-
-    public Meta criar(Meta meta) throws EntityNotCreatedException {
+    public MetaResponseDTO criar(MetaRequestDTO dto) {
         try {
-            return metaRepository.save(meta);
+            Meta meta = new Meta();
+            meta.setUsuarioId(SecurityUtils.getCurrentUserId());
+            meta.setTitulo(dto.getTitulo());
+            meta.setValorAlvo(dto.getValorAlvo());
+            meta.setDataLimite(dto.getDataLimite());
+            meta.setCategoriaId(dto.getCategoriaId());
+            meta.setStatus(dto.getStatus() != null ? dto.getStatus() : StatusMeta.ativa);
+
+            Meta salva = metaRepository.save(meta);
+            return MetaResponseDTO.fromEntity(salva);
         } catch (Exception e) {
             throw new EntityNotCreatedException("meta.not-created");
         }
     }
 
-    public List<Meta> listarPorUsuario(Long usuarioId) throws EntityNotFoundException {
+    public List<MetaResponseDTO> listarPorUsuario(Long usuarioId) {
         try {
-            return metaRepository.findByUsuarioId(usuarioId);
+            return metaRepository.findByUsuarioId(usuarioId).stream()
+                    .map(MetaResponseDTO::fromEntity)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new EntityNotFoundException("meta.not-found");
         }
     }
-
 
     public Meta buscarPorId(Long id, Long usuarioId) {
-        try {
-            return metaRepository.findById(id)
-                    .filter(meta -> meta.getUsuarioId().equals(usuarioId))
-                    .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário."));
-
-        } catch (Exception e) {
-            throw new EntityNotFoundException("meta.not-found");
-        }
+        return metaRepository.findById(id)
+                .filter(meta -> meta.getUsuarioId().equals(usuarioId))
+                .orElseThrow(() -> new EntityNotFoundException("meta.not-found"));
     }
 
-    public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {
-
+    public MetaResponseDTO atualizar(Long id, MetaRequestDTO dto, Long usuarioId) {
         try {
+            Meta existente = buscarPorId(id, usuarioId);
 
-            Meta metaExistente = buscarPorId(id, usuarioId);
+            atualizarSeDiferente(existente::setTitulo, dto.getTitulo(), existente.getTitulo());
+            atualizarSeDiferente(existente::setValorAlvo, dto.getValorAlvo(), existente.getValorAlvo());
+            atualizarSeDiferente(existente::setDataLimite, dto.getDataLimite(), existente.getDataLimite());
+            atualizarSeDiferente(existente::setCategoriaId, dto.getCategoriaId(), existente.getCategoriaId());
+            atualizarSeDiferente(existente::setStatus, dto.getStatus(), existente.getStatus());
 
-            atualizarSeDiferente(metaExistente::setTitulo, metaAtualizada.getTitulo(), metaExistente.getTitulo());
-            atualizarSeDiferente(metaExistente::setValorAlvo, metaAtualizada.getValorAlvo(), metaExistente.getValorAlvo());
-            atualizarSeDiferente(metaExistente::setDataLimite, metaAtualizada.getDataLimite(), metaExistente.getDataLimite());
-            atualizarSeDiferente(metaExistente::setCategoriaId, metaAtualizada.getCategoriaId(), metaExistente.getCategoriaId());
-            atualizarSeDiferente(metaExistente::setStatus, metaAtualizada.getStatus(), metaExistente.getStatus());
-
-            return metaRepository.save(metaExistente);
+            Meta atualizada = metaRepository.save(existente);
+            return MetaResponseDTO.fromEntity(atualizada);
         } catch (Exception e) {
             throw new EntityNotUpdatedException("meta.not-updated");
         }
-
     }
 
-    public void cancelar(Long id, Long usuarioId) throws EntityNotDeletedException {
+    public void cancelar(Long id, Long usuarioId) {
         try {
-
             Meta meta = buscarPorId(id, usuarioId);
             meta.setStatus(StatusMeta.cancelada);
             metaRepository.save(meta);

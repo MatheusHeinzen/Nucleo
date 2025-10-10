@@ -1,10 +1,11 @@
 package com.nucleo.controller;
 
+import com.nucleo.dto.CategoriaRequestDTO;
+import com.nucleo.dto.CategoriaResponseDTO;
 import com.nucleo.model.Categoria;
 import com.nucleo.service.CategoriaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,35 +19,29 @@ public class CategoriaController {
 
     private final CategoriaService categoriaService;
 
-
     @PostMapping
-    public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria) {
-        Categoria novaCategoria = categoriaService.criar(categoria);
-        return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
+    public ResponseEntity<CategoriaResponseDTO> criar(@RequestBody CategoriaRequestDTO request) {
+        return ResponseEntity.ok(categoriaService.criar(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<Categoria>> listar() {
-        List<Categoria> categorias = categoriaService.listarTodas();
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<CategoriaResponseDTO>> listar() {
+        return ResponseEntity.ok(categoriaService.listarTodas());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Categoria> buscarPorId(@PathVariable Long id) {
-        Categoria categoria = categoriaService.buscarPorId(id);
-        return ResponseEntity.ok(categoria);
+    public ResponseEntity<CategoriaResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(categoriaService.buscarPorIdDTO(id));
     }
 
     @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<Categoria>> buscarPorTipo(@PathVariable Categoria.TipoCategoria tipo) {
-        List<Categoria> categorias = categoriaService.buscarPorTipo(tipo);
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<CategoriaResponseDTO>> buscarPorTipo(@PathVariable Categoria.TipoCategoria tipo) {
+        return ResponseEntity.ok(categoriaService.buscarPorTipo(tipo));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Categoria> atualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
-        Categoria categoriaAtualizada = categoriaService.atualizar(id, categoria);
-        return ResponseEntity.ok(categoriaAtualizada);
+    public ResponseEntity<CategoriaResponseDTO> atualizar(@PathVariable Long id, @RequestBody CategoriaRequestDTO request) {
+        return ResponseEntity.ok(categoriaService.atualizar(id, request));
     }
 
     @DeleteMapping("/{id}")

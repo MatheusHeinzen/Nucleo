@@ -1,13 +1,13 @@
 package com.nucleo.controller;
 
-import com.nucleo.model.Usuario;
+import com.nucleo.dto.UsuarioRequestDTO;
+import com.nucleo.dto.UsuarioResponseDTO;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,68 +20,52 @@ import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 @RestController
 @RequestMapping("/api/usuarios")
 @Tag(name = "Usuários", description = "Gerenciamento de usuários do sistema Nucleo")
-@CrossOrigin(origins = "*") // Permite acesso do frontend
+@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    // READ - Listar todos os usuários
-    @GetMapping("/All")
+    // 🔹 Listar todos
+    @GetMapping("/all")
     @Operation(summary = "Listar todos os usuários")
-    public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
-        List<Usuario> usuarios = usuarioService.encontraTodos();
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodosUsuarios() {
+        return ResponseEntity.ok(usuarioService.encontraTodos());
     }
 
-    // READ - Buscar usuário por Email
+    // 🔹 Buscar usuário logado
     @GetMapping("/me")
-    @Operation(summary = "Buscar usuario logado")
-    public ResponseEntity<Usuario> buscarUsuarioPorEmail() {
-        Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
-        if(usuario == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        return ResponseEntity.ok(usuario);
-
-    }
-
-    // UPDATE - Atualizar usuário
-//    @PreAuthorize("#id == authentication.principal.id or hasRo    le('ADMIN')")
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar um usuário existente")
-    public ResponseEntity<Usuario> atualizarUsuario( @Valid @RequestBody Usuario usuarioDetails) {
-        Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
-        if (usuario == null) {
-            return ResponseEntity.notFound().build();
-        }
+    @Operation(summary = "Buscar usuário logado")
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioLogado() {
+        UsuarioResponseDTO usuario = usuarioService.buscarEuLogado();
         return ResponseEntity.ok(usuario);
     }
 
+    // 🔹 Atualizar usuário logado
+    @PutMapping
+    @Operation(summary = "Atualizar o usuário logado")
+    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario(@Valid @RequestBody UsuarioRequestDTO usuarioDetails) {
+        UsuarioResponseDTO usuarioAtualizado = usuarioService.atualizaUsuario(usuarioDetails);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
 
-    // DELETE - Deletar usuário
+    // 🔹 Deletar usuário logado
     @DeleteMapping
-    @Operation(summary = "Deletar um usuário")
-    public ResponseEntity<String> deletarUsuario() {
+    @Operation(summary = "Deletar o usuário logado")
+    public ResponseEntity<Void> deletarUsuario() {
         usuarioService.deletaUsuario();
-        return ResponseEntity.ok().build();
-
+        return ResponseEntity.noContent().build();
     }
 
-
-
-    // ENDPOINT ESPECIAL - Dashboard do usuário (simulado)
-
-    @GetMapping("dashboard")
+    // 🔹 Dashboard (mock)
+    @GetMapping("/dashboard")
     @Operation(summary = "Obter dados do dashboard do usuário")
     public ResponseEntity<Map<String, Object>> getDashboard() {
+        UsuarioResponseDTO usuario = usuarioService.buscarUsuarioPorEmail(getCurrentUserEmail());
 
-        Usuario usuario = usuarioService.buscarUsuarioPorEmail(getCurrentUserEmail());
-
-
-        // Simulação de dados do dashboard
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("usuario", usuario.getNome());
+        dashboard.put("isAdmin", usuario.isAdmin());
         dashboard.put("saldoAtual", 2543.75);
         dashboard.put("receitaMes", 3500.00);
         dashboard.put("despesaMes", 956.25);
@@ -91,6 +75,4 @@ public class UsuarioController {
 
         return ResponseEntity.ok(dashboard);
     }
-
-
 }

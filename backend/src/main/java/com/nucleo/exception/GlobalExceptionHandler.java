@@ -59,19 +59,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, jakarta.servlet.http.HttpServletRequest request,String message) {
         // Busca a mensagem no messages.properties
-        String mensagemTraduzida = messageSource.getMessage(
-                "login.login-failed",      // chave no messages.properties
-                null,                   // parâmetros (usados se tiver {0}, {1} etc.)
-                LocaleContextHolder.getLocale() // idioma atual (padrão: pt-BR)
-        );
+
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(401)
+                .status(ex.getStatus())
                 .error(HttpStatus.valueOf(ex.getStatus()).getReasonPhrase())
-                .message(mensagemTraduzida + ": " + ex.getMessage()) // usa a mensagem do bundle
+                .message(message) // usa a mensagem do bundle
                 .path(request.getRequestURI())
                 .build();
 

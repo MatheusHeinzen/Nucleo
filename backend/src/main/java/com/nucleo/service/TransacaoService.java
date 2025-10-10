@@ -1,6 +1,7 @@
 package com.nucleo.service;
 
 import com.nucleo.dto.TransacaoRequestDTO;
+import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
@@ -20,7 +21,6 @@ import java.util.List;
 @Service
 public class TransacaoService {
 
-
     @Autowired
     private TransacaoRepository transacaoRepository;
 
@@ -30,13 +30,15 @@ public class TransacaoService {
     @Autowired
     private UsuarioService usuarioService;
 
-
     public Transacao criar(TransacaoRequestDTO transacao) throws EntityNotCreatedException {
-        try{
-
-            Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+        try {
+            Usuario usuario = usuarioService.getUsuarioById(usuarioService.getUsuarioIdLogado());
             Categoria categoria = categoriaService.buscarPorId(transacao.getCategoriaId());
-            Transacao transacaoNova = Transacao.builder()
+
+            if (usuario == null) throw new AuthenticationException("error.auth");
+            if (categoria == null) throw new EntityNotFoundException("categoria.not-found");
+
+            Transacao nova = Transacao.builder()
                     .descricao(transacao.getDescricao())
                     .valor(transacao.getValor())
                     .data(transacao.getData())
@@ -45,37 +47,23 @@ public class TransacaoService {
                     .usuario(usuario)
                     .build();
 
-            transacaoRepository.save(transacaoNova);
-            return transacaoNova;
-        }catch(Exception e){
+            return transacaoRepository.save(nova);
+        } catch (Exception e) {
             throw new EntityNotCreatedException("transacao.not-created");
         }
     }
 
-    public List<Transacao> findByUsuarioId() throws EntityNotFoundException {
-        try {
-            Long usuarioId = SecurityUtils.getCurrentUserId();
-            return transacaoRepository.findAllByUsuarioIdAndAtivoTrue(usuarioId);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
-        }
+    public List<Transacao> findByUsuarioId() {
+        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        return transacaoRepository.findAllByUsuarioIdAndAtivoTrue(usuarioId);
     }
 
-    public BigDecimal getTotalEntradas(Long usuarioId) throws EntityNotFoundException {
-        try {
-            return transacaoRepository.sumValorByUsuarioIdAndTipo(usuarioId, Transacao.TipoTransacao.ENTRADA);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
-        }
-
+    public BigDecimal getTotalEntradas(Long usuarioId) {
+        return transacaoRepository.sumValorByUsuarioIdAndTipo(usuarioId, Transacao.TipoTransacao.ENTRADA);
     }
 
-    public BigDecimal getTotalSaidas(Long usuarioId) throws EntityNotFoundException {
-        try {
-            return transacaoRepository.sumValorByUsuarioIdAndTipo(usuarioId, Transacao.TipoTransacao.ENTRADA);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
-        }
+    public BigDecimal getTotalSaidas(Long usuarioId) {
+        return transacaoRepository.sumValorByUsuarioIdAndTipo(usuarioId, Transacao.TipoTransacao.SAIDA);
     }
 
     public BigDecimal getSaldo(Long usuarioId) {
@@ -84,76 +72,55 @@ public class TransacaoService {
         return entradas.subtract(saidas);
     }
 
-    public Transacao encontraPorId(Long id) throws EntityNotFoundException{
-            return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
+    public Transacao encontraPorId(Long id) {
+        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        return transacaoRepository.findTransacaoByUsuario_IdAndId(usuarioId, id);
     }
 
-    public Transacao atualizar(Long id, TransacaoRequestDTO transacao) throws EntityNotUpdatedException {
+    public Transacao atualizar(Long id, TransacaoRequestDTO transacao) {
         try {
+            Transacao existente = encontraPorId(id);
+            if (existente == null) throw new EntityNotFoundException("transacao.not-found");
 
-            Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
-            if(usuario == null){
-                throw new EntityNotFoundException("usuario.not-found");
-            }
+            Categoria categoria = categoriaService.buscarPorId(transacao.getCategoriaId());
+            Usuario usuario = usuarioService.getUsuarioById(usuarioService.getUsuarioIdLogado());
 
+            EntityUtils.atualizarSeDiferente(existente::setDescricao, transacao.getDescricao(), existente.getDescricao());
+            EntityUtils.atualizarSeDiferente(existente::setValor, transacao.getValor(), existente.getValor());
+            EntityUtils.atualizarSeDiferente(existente::setData, transacao.getData(), existente.getData());
+            EntityUtils.atualizarSeDiferente(existente::setTipo, transacao.getTipo(), existente.getTipo());
+            EntityUtils.atualizarSeDiferente(existente::setCategoria, categoria, existente.getCategoria());
+            EntityUtils.atualizarSeDiferente(existente::setUsuario, usuario, existente.getUsuario());
 
-            Categoria categoria = categoriaService.buscarPorId (transacao.getCategoriaId());
-            if(categoria == null){
-                throw new EntityNotFoundException("categoria.not-found");
-            }
-
-            var transacaoExistente = encontraPorId(id);
-            if(transacaoExistente == null) {
-                throw new EntityNotFoundException("transacao.not-found");
-            }
-
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setDescricao,transacao.getDescricao(),transacaoExistente.getDescricao());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setValor,transacao.getValor(),transacaoExistente.getValor());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setData,transacao.getData(),transacaoExistente.getData());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setTipo,transacao.getTipo(),transacaoExistente.getTipo());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setCategoria,categoria,transacaoExistente.getCategoria());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setUsuario,usuario,transacaoExistente.getUsuario());
-
-
-            return transacaoExistente;
+            return transacaoRepository.save(existente);
         } catch (Exception e) {
-           throw new EntityNotUpdatedException("transacao.not-updated");
+            throw new EntityNotUpdatedException("transacao.not-updated");
         }
     }
 
-    public void excluir(Long id) throws EntityNotFoundException, EntityNotDeletedException {
+    public void excluir(Long id) {
+        Transacao t = encontraPorId(id);
+        if (t == null) throw new EntityNotFoundException("transacao.not-found");
         try {
-            Transacao t = encontraPorId(id);
-            if(t == null) {
-                throw new EntityNotFoundException("transacao.not-found");
-            }
             transacaoRepository.deleteById(t.getId());
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new EntityNotDeletedException("transacao.not-deleted");
         }
-
     }
 
     public List<Transacao> buscarPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
-        Long usuarioId = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail()).getId();
+        Long usuarioId = usuarioService.getUsuarioIdLogado();
         return transacaoRepository.findByUsuarioAndPeriodo(usuarioId, dataInicio, dataFim);
     }
 
-
-    public List<Transacao> encontraPorTipo( Transacao.TipoTransacao tipo) throws EntityNotFoundException {
-        return null;
+    public List<Transacao> encontraPorTipo(Transacao.TipoTransacao tipo) {
+        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        return transacaoRepository.findAllByUsuarioIdAndTipoAndAtivoTrue(usuarioId, tipo);
     }
 
-    public List<Transacao> encontraPorCategoria( Long categoriaId) throws EntityNotFoundException {
-        try{
-            Categoria cat = categoriaService.buscarPorId(categoriaId);
-            if(cat == null){
-                throw new EntityNotFoundException("categoria.not-found");
-            }
-            return transacaoRepository.findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(SecurityUtils.getCurrentUserId(),cat.getId());
-        }catch(Exception e){
-            throw new EntityNotFoundException("transacao.not-found");
-        }
+    public List<Transacao> encontraPorCategoria(Long categoriaId) {
+        Categoria categoria = categoriaService.buscarPorId(categoriaId);
+        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        return transacaoRepository.findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(usuarioId, categoria.getId());
     }
-
 }

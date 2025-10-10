@@ -6,7 +6,6 @@ import com.nucleo.model.Transacao;
 import com.nucleo.service.TransacaoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,27 +15,24 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/transacoes")
-@Tag(name = "Transação", description = "Gerenciamento de usuários do sistema Nucleo")
+@Tag(name = "Transação", description = "Gerenciamento de transações financeiras do sistema Nucleo")
 @RequiredArgsConstructor
 public class TransacaoController {
 
-    @Autowired
     private final TransacaoService transacaoService;
 
     @PostMapping
-    public ResponseEntity<?> criar(@RequestBody TransacaoRequestDTO request) {
+    public ResponseEntity<TransacaoResponseDTO> criar(@RequestBody TransacaoRequestDTO request) {
         Transacao transacao = transacaoService.criar(request);
-        return ResponseEntity.ok().body(transacao);
+        return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
+
     @PutMapping("/{id}")
-
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
-
+    public ResponseEntity<TransacaoResponseDTO> atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
         Transacao transacao = transacaoService.atualizar(id, request);
-        return ResponseEntity.ok().body(transacao);
+        return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
 
     @DeleteMapping("/{id}")
@@ -54,24 +50,20 @@ public class TransacaoController {
         return ResponseEntity.ok(response);
     }
 
-
     @GetMapping("/periodo")
-    public ResponseEntity<List<Transacao>> buscarPorPeriodo(
-            @RequestParam("usuarioId") Long usuarioId,
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorPeriodo(
             @RequestParam("dataInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam("dataFim") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim)
-    {
+            @RequestParam("dataFim") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
 
-
-            List<Transacao> transacoes = transacaoService.buscarPorPeriodo(dataInicio, dataFim);
-
-            return ResponseEntity.ok(transacoes);
+        List<Transacao> transacoes = transacaoService.buscarPorPeriodo(dataInicio, dataFim);
+        List<TransacaoResponseDTO> response = transacoes.stream()
+                .map(TransacaoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/usuario/{usuarioId}/categoria/{categoriaId}")
-    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorCategoria(
-            @PathVariable Long usuarioId, @PathVariable Long categoriaId) {
-
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorCategoria(@PathVariable Long categoriaId) {
         List<Transacao> transacoes = transacaoService.encontraPorCategoria(categoriaId);
         List<TransacaoResponseDTO> response = transacoes.stream()
                 .map(TransacaoResponseDTO::fromEntity)
@@ -80,14 +72,11 @@ public class TransacaoController {
     }
 
     @GetMapping("/usuario/{usuarioId}/tipo/{tipo}")
-    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorTipo(
-            @PathVariable Long usuarioId, @PathVariable Transacao.TipoTransacao tipo) {
-
+    public ResponseEntity<List<TransacaoResponseDTO>> buscarPorTipo(@PathVariable Transacao.TipoTransacao tipo) {
         List<Transacao> transacoes = transacaoService.encontraPorTipo(tipo);
         List<TransacaoResponseDTO> response = transacoes.stream()
                 .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(response);
     }
 
@@ -106,7 +95,6 @@ public class TransacaoController {
                 "Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f",
                 entradas, saidas, saldo
         );
-
         return ResponseEntity.ok(resumo);
     }
 }
