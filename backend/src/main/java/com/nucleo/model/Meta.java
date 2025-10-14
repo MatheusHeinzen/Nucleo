@@ -25,8 +25,7 @@ public class Meta {
 
     @Column(name = "data_limite", nullable = false)
     private LocalDate dataLimite;
-
-    // Opcional, por isso nullable = true (padrão)
+    
     @Column(name = "categoria_id")
     private Long categoriaId;
 

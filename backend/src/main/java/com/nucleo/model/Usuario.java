@@ -17,7 +17,9 @@ import java.util.Set;
 public class Usuario extends BaseEntity {
 
     private String nome;
+    @Column(nullable = false)
     private String email;
+    @Column(nullable = false)
     private String senha;
 
     @Enumerated(EnumType.STRING)

@@ -61,7 +61,6 @@ public class UsuarioService  {
         }catch(Exception e){
             throw new EntityNotDeletedException("usuario.not-deleted");
         }
-
     }
 
     public Usuario atualizaUsuario( @Valid @RequestBody Usuario usuarioDetails) throws EntityNotUpdatedException {

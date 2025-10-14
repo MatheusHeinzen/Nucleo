@@ -69,28 +69,4 @@ public class UsuarioController {
     }
 
 
-
-    // ENDPOINT ESPECIAL - Dashboard do usuário (simulado)
-
-    @GetMapping("dashboard")
-    @Operation(summary = "Obter dados do dashboard do usuário")
-    public ResponseEntity<Map<String, Object>> getDashboard() {
-
-        Usuario usuario = usuarioService.buscarUsuarioPorEmail(getCurrentUserEmail());
-
-
-        // Simulação de dados do dashboard
-        Map<String, Object> dashboard = new HashMap<>();
-        dashboard.put("usuario", usuario.getNome());
-        dashboard.put("saldoAtual", 2543.75);
-        dashboard.put("receitaMes", 3500.00);
-        dashboard.put("despesaMes", 956.25);
-        dashboard.put("economiaMes", 2543.75);
-        dashboard.put("proximasFaturas", List.of("Internet", "Aluguel"));
-        dashboard.put("alertas", List.of("Gasto com delivery acima da média"));
-
-        return ResponseEntity.ok(dashboard);
-    }
-
-
 }
