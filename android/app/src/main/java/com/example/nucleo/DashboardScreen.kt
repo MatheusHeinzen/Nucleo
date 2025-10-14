@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DashboardScreen(
     onNewTransaction: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onStatisticsClick: () -> Unit
 ) {
     val transactions by TransactionManager.transactions.collectAsState()
     val balance by TransactionManager.balance.collectAsState()
@@ -28,8 +29,8 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("Nucleo") },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.Search, contentDescription = "Buscar")
+                    IconButton(onClick = onStatisticsClick) {
+                        Icon(Icons.Default.BarChart, contentDescription = "Estatísticas")
                     }
                     IconButton(onClick = { }) {
                         Icon(Icons.Default.Settings, contentDescription = "Configuracoes")

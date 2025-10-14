@@ -8,7 +8,7 @@ object TransactionManager {
     private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
     val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
 
-    private val _balance = MutableStateFlow(2845.50)
+    private val _balance = MutableStateFlow(295.00)
     val balance: StateFlow<Double> = _balance.asStateFlow()
 
     private var nextId = 4 // Já temos 3 transações iniciais

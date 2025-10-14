@@ -28,6 +28,9 @@ fun NucleoApp() {
                 },
                 onProfileClick = {
                     navController.navigate("profile")
+                },
+                onStatisticsClick = {
+                    navController.navigate("statistics")
                 }
             )
         }
@@ -47,6 +50,12 @@ fun NucleoApp() {
                         popUpTo("login") { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable("statistics") {
+            StatisticsScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
