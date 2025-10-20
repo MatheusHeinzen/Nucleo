@@ -1,11 +1,10 @@
-package com.example.nucleo
+package com.example.nucleo.view.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
@@ -15,15 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.nucleo.model.Transaction
+import com.example.nucleo.model.TransactionType
+import com.example.nucleo.view.scaffold.AppScaffold
+import com.example.nucleo.view.components.StatItem
+import com.example.nucleo.view.components.CategoryBarItem
+import com.example.nucleo.utils.CurrencyUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
+    transactions: List<Transaction>,
+    balance: Double,
     onBackClick: () -> Unit
 ) {
-    val transactions by TransactionManager.transactions.collectAsState()
-    val balance by TransactionManager.balance.collectAsState()
-
     // Calcular dados para gráficos
     val incomeTotal = transactions.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
     val expenseTotal = transactions.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount } * -1
@@ -36,17 +40,10 @@ fun StatisticsScreen(
         .sortedByDescending { it.second }
         .take(5)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Estatísticas") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        title = "Estatísticas",
+        showBackButton = true,
+        onBackClick = onBackClick
     ) { padding ->
         Column(
             modifier = Modifier
@@ -55,6 +52,7 @@ fun StatisticsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
+            
             // Card Resumo
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -78,19 +76,19 @@ fun StatisticsScreen(
                     ) {
                         StatItem(
                             title = "Saldo Atual",
-                            value = "R$ ${"%.2f".format(balance).replace(".", ",")}",
+                            value = CurrencyUtils.formatCurrency(balance),
                             color = MaterialTheme.colorScheme.primary
                         )
 
                         StatItem(
                             title = "Total Receitas",
-                            value = "R$ ${"%.2f".format(incomeTotal).replace(".", ",")}",
+                            value = CurrencyUtils.formatCurrency(incomeTotal),
                             color = Color(0xFF4CAF50)
                         )
 
                         StatItem(
                             title = "Total Despesas",
-                            value = "R$ ${"%.2f".format(expenseTotal).replace(".", ",")}",
+                            value = CurrencyUtils.formatCurrency(expenseTotal),
                             color = Color(0xFFF44336)
                         )
                     }
@@ -271,83 +269,7 @@ fun StatisticsScreen(
             }
         }
     }
-}
-
-@Composable
-fun StatItem(
-    title: String,
-    value: String,
-    color: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            color = color,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-fun CategoryBarItem(
-    category: String,
-    amount: Double,
-    maxAmount: Double,
-    color: Color
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Text(
-            text = category,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(100.dp)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // Barra de progresso
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(20.dp)
-        ) {
-            // Fundo
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-
-            // Preenchimento
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .background(color)
-                    .width(((amount / maxAmount) * 100).dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Text(
-            text = "R$ ${"%.0f".format(amount)}",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Medium
-        )
-    }
+    
 }
 
 fun getCategoryColor(category: String): Color {

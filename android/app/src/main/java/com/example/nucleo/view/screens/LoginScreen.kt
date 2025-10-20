@@ -1,4 +1,4 @@
-package com.example.nucleo
+package com.example.nucleo.view.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

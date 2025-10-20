@@ -1,4 +1,4 @@
-package com.example.nucleo
+package com.example.nucleo.view.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.nucleo.view.scaffold.AppScaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,17 +22,10 @@ fun ProfileScreen(
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkThemeEnabled by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar")
-                    }
-                }
-            )
-        }
+    AppScaffold(
+        title = "Perfil",
+        showBackButton = true,
+        onBackClick = onBackClick
     ) { padding ->
         Column(
             modifier = Modifier
