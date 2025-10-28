@@ -13,11 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nucleo.model.TransactionType
+import com.example.nucleo.ui.TransactionFormUiState
 import com.example.nucleo.view.scaffold.AppScaffold
 import com.example.nucleo.viewmodel.TransactionViewModel
-import com.example.nucleo.di.AppModule
 import com.example.nucleo.view.components.DatePickerComponent
 import com.example.nucleo.utils.CurrencyUtils
 import java.text.SimpleDateFormat
@@ -28,11 +29,11 @@ import java.util.*
 @Composable
 fun TransactionScreen(
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit
+    onSaveClick: () -> Unit,
+    viewModel: TransactionViewModel = hiltViewModel()
 ) {
-    val transactionRepository = AppModule.transactionRepository
-    val viewModel = remember { TransactionViewModel(transactionRepository) }
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     AppScaffold(
         title = "Nova Transação",
@@ -48,7 +49,7 @@ fun TransactionScreen(
         ) {
             // Valor
             OutlinedTextField(
-                value = uiState.amount,
+                value = formState.amount,
                 onValueChange = { value ->
                     // Permitir apenas números, vírgula e ponto
                     val filteredValue = value.filter { it.isDigit() || it == ',' || it == '.' }
@@ -58,10 +59,10 @@ fun TransactionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Ex: 50,00") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                isError = uiState.amount.isNotEmpty() && uiState.amount.toDoubleOrNull() == null,
+                isError = formState.amount.isNotEmpty() && formState.amount.toDoubleOrNull() == null,
                 supportingText = {
-                    if (uiState.amount.isNotEmpty()) {
-                        val parsed = CurrencyUtils.parseCurrency(uiState.amount)
+                    if (formState.amount.isNotEmpty()) {
+                        val parsed = CurrencyUtils.parseCurrency(formState.amount)
                         parsed?.let {
                             Text(
                                 text = CurrencyUtils.formatCurrency(it),
@@ -72,7 +73,7 @@ fun TransactionScreen(
                 }
             )
 
-            if (uiState.amount.isNotEmpty() && uiState.amount.toDoubleOrNull() == null) {
+            if (formState.amount.isNotEmpty() && formState.amount.toDoubleOrNull() == null) {
                 Text(
                     text = "Digite um valor válido",
                     color = MaterialTheme.colorScheme.error,
@@ -85,15 +86,15 @@ fun TransactionScreen(
 
             // Descrição
             OutlinedTextField(
-                value = uiState.description,
+                value = formState.description,
                 onValueChange = { viewModel.updateDescription(it) },
                 label = { Text("Descrição") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Ex: Almoço restaurante") },
-                isError = uiState.description.isNotEmpty() && uiState.description.length < 3
+                isError = formState.description.isNotEmpty() && formState.description.length < 3
             )
 
-            if (uiState.description.isNotEmpty() && uiState.description.length < 3) {
+            if (formState.description.isNotEmpty() && formState.description.length < 3) {
                 Text(
                     text = "Descrição deve ter pelo menos 3 caracteres",
                     color = MaterialTheme.colorScheme.error,
@@ -113,7 +114,7 @@ fun TransactionScreen(
                     onClick = { viewModel.updateType(TransactionType.INCOME) },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = if (uiState.type == TransactionType.INCOME) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
+                        contentColor = if (formState.type == TransactionType.INCOME) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 ) {
                     Text("Receita")
@@ -125,7 +126,7 @@ fun TransactionScreen(
                     onClick = { viewModel.updateType(TransactionType.EXPENSE) },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = if (uiState.type == TransactionType.EXPENSE) Color(0xFFF44336) else MaterialTheme.colorScheme.onSurfaceVariant
+                        contentColor = if (formState.type == TransactionType.EXPENSE) Color(0xFFF44336) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 ) {
                     Text("Despesa")
@@ -143,7 +144,7 @@ fun TransactionScreen(
                 onExpandedChange = { categoryExpanded = !categoryExpanded }
             ) {
                 OutlinedTextField(
-                    value = uiState.category,
+                    value = formState.category,
                     onValueChange = { },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -175,36 +176,58 @@ fun TransactionScreen(
 
             // Data
             DatePickerComponent(
-                selectedDate = uiState.date,
+                selectedDate = formState.date,
                 onDateSelected = viewModel::updateDate,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Exibir erro se houver
-            uiState.error?.let { error ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp)
-                    )
+            // Exibir mensagem se houver
+            val currentUiState = uiState
+            when (currentUiState) {
+                is TransactionFormUiState.Error -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = currentUiState.message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                is TransactionFormUiState.Ready -> {
+                    currentUiState.message?.let { message ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = message,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+                else -> { /* Loading state - no message */ }
             }
 
             // Botão Salvar
             Button(
                 onClick = { 
                     viewModel.clearError()
-                    viewModel.addTransaction {
+                    viewModel.saveTransaction {
                         onSaveClick() // Navega de volta para o dashboard
                     }
                 },
@@ -212,12 +235,20 @@ fun TransactionScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = MaterialTheme.shapes.medium,
-                enabled = uiState.amount.isNotEmpty() && 
-                         uiState.description.isNotEmpty() &&
-                         uiState.amount.toDoubleOrNull() != null &&
-                         uiState.amount.toDoubleOrNull()!! > 0
+                enabled = formState.amount.isNotEmpty() && 
+                         formState.description.isNotEmpty() &&
+                         formState.amount.toDoubleOrNull() != null &&
+                         formState.amount.toDoubleOrNull()!! > 0 &&
+                         uiState !is TransactionFormUiState.Loading
             ) {
-                Text("Salvar Transação", style = MaterialTheme.typography.labelLarge)
+                if (uiState is TransactionFormUiState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Salvar Transação", style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
     }

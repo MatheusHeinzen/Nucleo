@@ -1,5 +1,6 @@
 package com.example.nucleo.view.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,14 +17,21 @@ import com.example.nucleo.utils.CurrencyUtils
 @Composable
 fun TransactionItem(
     transaction: Transaction,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: (() -> Unit)? = null
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     
     Card(
         shape = MaterialTheme.shapes.small,
         elevation = CardDefaults.cardElevation(1.dp),
-        modifier = Modifier.padding(bottom = 8.dp)
+        modifier = Modifier
+            .padding(bottom = 8.dp)
+            .then(
+                if (onEdit != null) {
+                    Modifier.clickable { onEdit() }
+                } else Modifier
+            )
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -59,9 +67,18 @@ fun TransactionItem(
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            // Botão deletar
-            IconButton(onClick = { showDeleteDialog = true }) {
-                Icon(Icons.Default.Delete, contentDescription = "Deletar", tint = Color(0xFFF44336))
+            Row {
+                // Botão editar (se disponível)
+                onEdit?.let { editAction ->
+                    IconButton(onClick = editAction) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                
+                // Botão deletar
+                IconButton(onClick = { showDeleteDialog = true }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Deletar", tint = Color(0xFFF44336))
+                }
             }
         }
     }

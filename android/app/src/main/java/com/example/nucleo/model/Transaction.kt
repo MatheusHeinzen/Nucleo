@@ -1,7 +1,12 @@
 package com.example.nucleo.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "transactions")
 data class Transaction(
-    val id: Int,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0L,
     val amount: Double,
     val description: String,
     val type: TransactionType,

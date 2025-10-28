@@ -5,72 +5,115 @@ import androidx.lifecycle.viewModelScope
 import com.example.nucleo.model.Transaction
 import com.example.nucleo.model.TransactionType
 import com.example.nucleo.repository.TransactionRepository
+import com.example.nucleo.ui.TransactionFormUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
-class TransactionViewModel(
+@HiltViewModel
+class TransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(TransactionUiState())
-    val uiState: StateFlow<TransactionUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<TransactionFormUiState>(TransactionFormUiState.Loading)
+    val uiState: StateFlow<TransactionFormUiState> = _uiState.asStateFlow()
+
+    private val _formState = MutableStateFlow(TransactionFormData())
+    val formState: StateFlow<TransactionFormData> = _formState.asStateFlow()
+
+    init {
+        _uiState.value = TransactionFormUiState.Ready()
+    }
+
+    fun loadTransactionForEdit(transactionId: Long) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = TransactionFormUiState.Loading
+                val transaction = transactionRepository.getTransactionById(transactionId)
+                if (transaction != null) {
+                    _formState.value = TransactionFormData(
+                        amount = Math.abs(transaction.amount).toString(),
+                        description = transaction.description,
+                        type = transaction.type,
+                        category = transaction.category,
+                        date = transaction.date
+                    )
+                    _uiState.value = TransactionFormUiState.Ready(transaction, isEditing = true)
+                } else {
+                    _uiState.value = TransactionFormUiState.Error("Transação não encontrada")
+                }
+            } catch (e: Exception) {
+                _uiState.value = TransactionFormUiState.Error("Erro ao carregar transação: ${e.message}")
+            }
+        }
+    }
 
     fun updateAmount(amount: String) {
-        _uiState.value = _uiState.value.copy(amount = amount)
+        _formState.value = _formState.value.copy(amount = amount)
     }
 
     fun updateDescription(description: String) {
-        _uiState.value = _uiState.value.copy(description = description)
+        _formState.value = _formState.value.copy(description = description)
     }
 
     fun updateType(type: TransactionType) {
-        _uiState.value = _uiState.value.copy(type = type)
+        _formState.value = _formState.value.copy(type = type)
     }
 
     fun updateCategory(category: String) {
-        _uiState.value = _uiState.value.copy(category = category)
+        _formState.value = _formState.value.copy(category = category)
     }
 
     fun updateDate(date: String) {
-        _uiState.value = _uiState.value.copy(date = date)
+        _formState.value = _formState.value.copy(date = date)
     }
 
-    fun addTransaction(onSuccess: () -> Unit) {
-        val currentState = _uiState.value
+    fun saveTransaction(onSuccess: () -> Unit) {
+        val currentFormState = _formState.value
+        val currentUiState = _uiState.value
         
-        if (!isValidTransaction(currentState)) {
-            _uiState.value = currentState.copy(error = "Preencha todos os campos corretamente")
+        if (!isValidTransaction(currentFormState)) {
+            _uiState.value = TransactionFormUiState.Error("Preencha todos os campos corretamente")
             return
         }
 
         viewModelScope.launch {
             try {
-                val amountValue = currentState.amount.toDoubleOrNull() ?: 0.0
-                val finalAmount = if (currentState.type == TransactionType.EXPENSE) -amountValue else amountValue
+                val amountValue = currentFormState.amount.toDoubleOrNull() ?: 0.0
+                val finalAmount = if (currentFormState.type == TransactionType.EXPENSE) -amountValue else amountValue
 
                 val transaction = Transaction(
-                    id = 0, // Será definido pelo repository
+                    id = if (currentUiState is TransactionFormUiState.Ready && currentUiState.isEditing) 
+                        currentUiState.transaction?.id ?: 0L else 0L,
                     amount = finalAmount,
-                    description = currentState.description,
-                    type = currentState.type,
-                    category = currentState.category,
-                    date = currentState.date
+                    description = currentFormState.description,
+                    type = currentFormState.type,
+                    category = currentFormState.category,
+                    date = currentFormState.date
                 )
 
-                transactionRepository.addTransaction(transaction)
-                resetForm()
+                if (currentUiState is TransactionFormUiState.Ready && currentUiState.isEditing) {
+                    transactionRepository.updateTransaction(transaction)
+                    _uiState.value = TransactionFormUiState.Ready(message = "Transação atualizada com sucesso!")
+                } else {
+                    transactionRepository.addTransaction(transaction)
+                    _uiState.value = TransactionFormUiState.Ready(message = "Transação criada com sucesso!")
+                    resetForm()
+                }
+                
                 onSuccess()
             } catch (e: Exception) {
-                _uiState.value = currentState.copy(error = "Erro ao adicionar transação: ${e.message}")
+                _uiState.value = TransactionFormUiState.Error("Erro ao salvar transação: ${e.message}")
             }
         }
     }
 
-    private fun isValidTransaction(state: TransactionUiState): Boolean {
+    private fun isValidTransaction(state: TransactionFormData): Boolean {
         return state.amount.isNotBlank() && 
                state.description.isNotBlank() &&
                state.amount.toDoubleOrNull() != null &&
@@ -78,19 +121,26 @@ class TransactionViewModel(
     }
 
     private fun resetForm() {
-        _uiState.value = TransactionUiState()
+        _formState.value = TransactionFormData()
     }
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        when (val currentState = _uiState.value) {
+            is TransactionFormUiState.Error -> {
+                _uiState.value = TransactionFormUiState.Ready()
+            }
+            is TransactionFormUiState.Ready -> {
+                _uiState.value = currentState.copy(message = null)
+            }
+            else -> { /* No action needed for Loading */ }
+        }
     }
 }
 
-data class TransactionUiState(
+data class TransactionFormData(
     val amount: String = "",
     val description: String = "",
     val type: TransactionType = TransactionType.EXPENSE,
     val category: String = "Alimentação",
-    val date: String = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
-    val error: String? = null
+    val date: String = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
 )

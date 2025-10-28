@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nucleo.di.AppModule
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nucleo.view.components.TransactionList
 import com.example.nucleo.view.scaffold.AppBottomNavigation
 import com.example.nucleo.viewmodel.DashboardViewModel
@@ -20,11 +20,10 @@ fun TransactionsListScreen(
     currentRoute: String,
     onNewTransaction: () -> Unit,
     onNavigate: (String) -> Unit,
-    onDeleteTransaction: (Int) -> Unit
+    onDeleteTransaction: (Int) -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
 ) {
-    val transactionRepository = AppModule.transactionRepository
-    val viewModel = remember { DashboardViewModel(transactionRepository) }
-    val allTransactions by viewModel.transactions.collectAsState()
+    val allTransactions by viewModel.transactions.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -113,7 +112,10 @@ fun TransactionsListScreen(
             // Lista de todas as transações
             TransactionList(
                 transactions = allTransactions.sortedByDescending { it.id },
-                onDeleteTransaction = onDeleteTransaction
+                onDeleteTransaction = onDeleteTransaction,
+                onEditTransaction = { transactionId ->
+                    onNavigate("update_transaction/$transactionId")
+                }
             )
         }
     }

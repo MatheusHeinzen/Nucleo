@@ -1,77 +1,115 @@
 package com.example.nucleo.repository
 
-import android.content.Context
-import com.example.nucleo.data.PreferencesManager
+import com.example.nucleo.data.TransactionDao
 import com.example.nucleo.model.Transaction
 import com.example.nucleo.model.TransactionType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TransactionRepository(context: Context) {
-    private val preferencesManager = PreferencesManager(context)
+@Singleton
+class TransactionRepository @Inject constructor(
+    private val transactionDao: TransactionDao
+) {
     
-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
-    val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
-
+    // Mantém compatibilidade com StateFlow
     private val _balance = MutableStateFlow(295.00)
     val balance: StateFlow<Double> = _balance.asStateFlow()
-
-    private var nextId = 4
-
+    
+    // Usa Flow do Room diretamente
+    val transactions: Flow<List<Transaction>> = transactionDao.observeAll()
+    
     init {
-        loadData()
+        // Inicializa com dados de exemplo se necessário
+        initializeWithSampleData()
     }
     
-    private fun loadData() {
-        val savedTransactions = preferencesManager.loadTransactions()
-        val savedBalance = preferencesManager.loadBalance()
-        val savedNextId = preferencesManager.loadNextId()
-        
-        if (savedTransactions.isNotEmpty()) {
-            _transactions.value = savedTransactions
-            _balance.value = savedBalance
-            nextId = savedNextId
-        } else {
-            // Dados iniciais se não houver dados salvos
-            _transactions.value = listOf(
-                Transaction(1, -85.0, "Supermercado", TransactionType.EXPENSE, "Alimentação", "Hoje 14:30"),
-                Transaction(2, 500.0, "Freelance", TransactionType.INCOME, "Trabalho", "Ontem 09:15"),
-                Transaction(3, -120.0, "Posto Shell", TransactionType.EXPENSE, "Transporte", "15/05 18:40")
-            )
-            saveData()
+    private fun initializeWithSampleData() {
+        // Verifica se precisa adicionar dados iniciais em background
+        CoroutineScope(Dispatchers.IO).launch {
+            val count = transactionDao.getTransactionCount()
+            if (count == 0) {
+                // Adiciona dados iniciais
+                val sampleTransactions = listOf(
+                    Transaction(
+                        id = 0L,
+                        amount = -85.0,
+                        description = "Supermercado",
+                        type = TransactionType.EXPENSE,
+                        category = "Alimentação",
+                        date = "Hoje 14:30"
+                    ),
+                    Transaction(
+                        id = 0L,
+                        amount = 500.0,
+                        description = "Freelance",
+                        type = TransactionType.INCOME,
+                        category = "Trabalho",
+                        date = "Ontem 09:15"
+                    ),
+                    Transaction(
+                        id = 0L,
+                        amount = -120.0,
+                        description = "Posto Shell",
+                        type = TransactionType.EXPENSE,
+                        category = "Transporte",
+                        date = "15/05 18:40"
+                    )
+                )
+                
+                sampleTransactions.forEach { transaction ->
+                    transactionDao.insert(transaction)
+                }
+                
+                updateBalance()
+            }
         }
     }
     
-    private fun saveData() {
-        preferencesManager.saveTransactions(_transactions.value)
-        preferencesManager.saveBalance(_balance.value)
-        preferencesManager.saveNextId(nextId)
+    suspend fun addTransaction(transaction: Transaction): Long = withContext(Dispatchers.IO) {
+        val id = transactionDao.insert(transaction)
+        updateBalance()
+        id
     }
-
-    fun addTransaction(transaction: Transaction) {
-        val newTransaction = transaction.copy(id = nextId++)
-        _transactions.value = _transactions.value + newTransaction
-        _balance.value += transaction.amount
-        saveData()
+    
+    suspend fun updateTransaction(transaction: Transaction) = withContext(Dispatchers.IO) {
+        transactionDao.update(transaction)
+        updateBalance()
     }
-
-    fun deleteTransaction(transactionId: Int) {
-        val transaction = _transactions.value.find { it.id == transactionId }
-        _transactions.value = _transactions.value.filter { it.id != transactionId }
-        transaction?.let { _balance.value -= it.amount }
-        saveData()
+    
+    suspend fun deleteTransaction(transactionId: Long) = withContext(Dispatchers.IO) {
+        transactionDao.deleteById(transactionId)
+        updateBalance()
     }
-
-    fun getIncomeTotal(): Double {
-        return _transactions.value
-            .filter { it.type == TransactionType.INCOME }
-            .sumOf { it.amount }
+    
+    // Método de compatibilidade para ID Int
+    suspend fun deleteTransaction(transactionId: Int) {
+        deleteTransaction(transactionId.toLong())
     }
-
-    fun getExpenseTotal(): Double {
-        return _transactions.value
-            .filter { it.type == TransactionType.EXPENSE }
-            .sumOf { it.amount }
+    
+    suspend fun getTransactionById(id: Long): Transaction? = withContext(Dispatchers.IO) {
+        transactionDao.getById(id)
+    }
+    
+    suspend fun getIncomeTotal(): Double = withContext(Dispatchers.IO) {
+        transactionDao.getTotalIncome() ?: 0.0
+    }
+    
+    suspend fun getExpenseTotal(): Double = withContext(Dispatchers.IO) {
+        Math.abs(transactionDao.getTotalExpense() ?: 0.0)
+    }
+    
+    private suspend fun updateBalance() {
+        val income = getIncomeTotal()
+        val expense = getExpenseTotal()
+        _balance.value = income - expense
     }
 }

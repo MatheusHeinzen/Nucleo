@@ -11,7 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.nucleo.model.Transaction
 import com.example.nucleo.model.TransactionType
 import com.example.nucleo.view.components.TransactionItem
@@ -20,7 +21,6 @@ import com.example.nucleo.view.components.TransactionList
 import com.example.nucleo.view.scaffold.AppBottomNavigation
 import com.example.nucleo.viewmodel.DashboardViewModel
 import com.example.nucleo.viewmodel.DashboardStats
-import com.example.nucleo.di.AppModule
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,14 +30,13 @@ fun DashboardScreen(
     onProfileClick: () -> Unit,
     onStatisticsClick: () -> Unit,
     onNavigate: (String) -> Unit,
-    onDeleteTransaction: (Int) -> Unit
+    onDeleteTransaction: (Int) -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
 ) {
-    val transactionRepository = AppModule.transactionRepository
-    val viewModel = remember { DashboardViewModel(transactionRepository) }
-    val dashboardStats by viewModel.dashboardStats.collectAsState(
-        initial = DashboardStats(0.0, 0.0, 0.0, 0, null)
+    val dashboardStats by viewModel.dashboardStats.collectAsStateWithLifecycle(
+        initialValue = DashboardStats(0.0, 0.0, 0.0, 0, null)
     )
-    val allTransactions by viewModel.transactions.collectAsState()
+    val allTransactions by viewModel.transactions.collectAsStateWithLifecycle()
     val recentTransactions = allTransactions.sortedByDescending { it.id }.take(5)
     Scaffold(
         topBar = {
@@ -89,7 +88,10 @@ fun DashboardScreen(
             // Lista de transações
             TransactionList(
                 transactions = recentTransactions,
-                onDeleteTransaction = onDeleteTransaction
+                onDeleteTransaction = onDeleteTransaction,
+                onEditTransaction = { transactionId ->
+                    onNavigate("update_transaction/$transactionId")
+                }
             )
         }
     }

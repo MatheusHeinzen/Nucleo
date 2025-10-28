@@ -14,6 +14,7 @@ import com.example.nucleo.model.TransactionType
 fun TransactionList(
     transactions: List<Transaction>,
     onDeleteTransaction: (Int) -> Unit,
+    onEditTransaction: ((Long) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -71,7 +72,8 @@ fun TransactionList(
                 items(filteredTransactions) { transaction ->
                     TransactionItem(
                         transaction = transaction,
-                        onDelete = { onDeleteTransaction(transaction.id) }
+                        onDelete = { onDeleteTransaction(transaction.id.toInt()) },
+                        onEdit = onEditTransaction?.let { edit -> { edit(transaction.id) } }
                     )
                 }
             }

@@ -5,15 +5,27 @@ import androidx.lifecycle.viewModelScope
 import com.example.nucleo.model.Transaction
 import com.example.nucleo.model.TransactionType
 import com.example.nucleo.repository.TransactionRepository
+import com.example.nucleo.ui.DashboardUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DashboardViewModel(
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
-    val transactions: StateFlow<List<Transaction>> = transactionRepository.transactions
+    private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
+    val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
+
+    // Mantém compatibilidade com as telas existentes
+    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
+    val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
     val balance: StateFlow<Double> = transactionRepository.balance
 
     // Calcula estatísticas em tempo real
@@ -30,18 +42,71 @@ class DashboardViewModel(
         )
     }
 
+    init {
+        loadDashboard()
+    }
+
+    private fun loadDashboard() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = DashboardUiState.Loading
+                
+                transactionRepository.transactions
+                    .catch { error ->
+                        _uiState.value = DashboardUiState.Error("Erro ao carregar transações: ${error.message}")
+                    }
+                    .collect { transactionList ->
+                        _transactions.value = transactionList
+                        
+                        val totalIncome = transactionRepository.getIncomeTotal()
+                        val totalExpense = transactionRepository.getExpenseTotal()
+                        
+                        _uiState.value = DashboardUiState.Ready(
+                            balance = balance.value,
+                            totalIncome = totalIncome,
+                            totalExpense = totalExpense,
+                            transactionCount = transactionList.size,
+                            recentTransactions = transactionList.sortedByDescending { it.id }.take(5)
+                        )
+                    }
+            } catch (e: Exception) {
+                _uiState.value = DashboardUiState.Error("Erro ao carregar dashboard: ${e.message}")
+            }
+        }
+    }
+
     fun deleteTransaction(transactionId: Int) {
         viewModelScope.launch {
-            transactionRepository.deleteTransaction(transactionId)
+            try {
+                transactionRepository.deleteTransaction(transactionId)
+                
+                when (val currentState = _uiState.value) {
+                    is DashboardUiState.Ready -> {
+                        _uiState.value = currentState.copy(message = "Transação excluída com sucesso!")
+                    }
+                    else -> { /* No action needed */ }
+                }
+            } catch (e: Exception) {
+                _uiState.value = DashboardUiState.Error("Erro ao excluir transação: ${e.message}")
+            }
+        }
+    }
+
+    fun clearMessage() {
+        when (val currentState = _uiState.value) {
+            is DashboardUiState.Ready -> {
+                _uiState.value = currentState.copy(message = null)
+            }
+            else -> { /* No action needed */ }
         }
     }
 
     fun getIncomeTotal(): Double {
-        return transactionRepository.getIncomeTotal()
+        return transactions.value.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
     }
 
     fun getExpenseTotal(): Double {
-        return transactionRepository.getExpenseTotal()
+        return transactions.value.filter { it.type == TransactionType.EXPENSE }.sumOf { kotlin.math.abs(it.amount) }
     }
 }
 

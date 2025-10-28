@@ -1,21 +1,19 @@
 package com.example.nucleo
 
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.nucleo.di.AppModule
+import androidx.navigation.navArgument
 import com.example.nucleo.view.screens.*
 import com.example.nucleo.viewmodel.DashboardViewModel
 
 @Composable
 fun NucleoApp() {
     val navController = rememberNavController()
-    val transactionRepository = AppModule.transactionRepository
-    val dashboardViewModel: DashboardViewModel = viewModel { 
-        DashboardViewModel(transactionRepository) 
-    }
+    val dashboardViewModel: DashboardViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -54,6 +52,18 @@ fun NucleoApp() {
 
         composable("transaction") {
             TransactionScreen(
+                onBackClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
+        }
+        
+        composable(
+            route = "update_transaction/{transactionId}",
+            arguments = listOf(navArgument("transactionId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getLong("transactionId") ?: 0L
+            UpdateTransactionScreen(
+                transactionId = transactionId,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = { navController.popBackStack() }
             )
