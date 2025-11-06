@@ -7,52 +7,42 @@ import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.utils.EntityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 import static com.nucleo.security.SecurityUtils.getCurrentUserId;
 
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService  {
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    /**
-     * Obtém o ID do usuário logado
-     */
+    private final UsuarioRepository usuarioRepository;
 
     public List<Usuario> encontraTodos() throws EntityNotFoundException {
         try {
-            return usuarioRepository.findAll();
+            return usuarioRepository.findAllByAtivoTrue();
         }
         catch (Exception e){
             throw new EntityNotFoundException("usuario.not-found");
         }
     }
 
-    public Long getUsuarioIdLogado(){
-        return getCurrentUserId();
-    }
-
     public Usuario buscarUsuarioPorEmail(String email) throws EntityNotFoundException {
         try{
-            Optional<Usuario> usuario = usuarioRepository.findByEmailAndAtivoTrue(getCurrentUserEmail());
-            Usuario u =  usuario.get();
-            return u;
+            return usuarioRepository.findByEmailAndAtivoTrue(email)
+                    .orElseThrow(() -> new EntityNotFoundException("usuario.not-found"));
         }catch (Exception e){
-            return null;
+            throw new EntityNotFoundException("usuario.not-found");
         }
     }
 
     public Usuario buscarPorId(Long id) throws EntityNotFoundException {
         try {
-            return usuarioRepository.findById(id)
+            return usuarioRepository.findByIdAndAtivoTrue(id)
                     .orElseThrow(() -> new EntityNotFoundException("usuario.not-found"));
         } catch (Exception e) {
             throw new EntityNotFoundException("usuario.not-found");
@@ -61,10 +51,12 @@ public class UsuarioService  {
 
 
     public void deletaUsuario() throws EntityNotDeletedException {
-        String email = getCurrentUserEmail();
+        Long usuarioId = getCurrentUserId();
         try{
-            Optional<Usuario> usuario = usuarioRepository.findByEmailAndAtivoTrue(email);
-            usuario.ifPresent(usuarioRepository::delete);
+            Optional<Usuario> usuario = usuarioRepository.findByIdAndAtivoTrue(usuarioId);
+            if (usuario.isPresent()) {
+                usuarioRepository.softDelete(usuarioId);
+            }
         }catch(Exception e){
             throw new EntityNotDeletedException("usuario.not-deleted");
         }

@@ -4,7 +4,6 @@ import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 @Entity
@@ -17,7 +16,7 @@ import java.util.Set;
 public class Usuario extends BaseEntity {
 
     private String nome;
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
     private String senha;

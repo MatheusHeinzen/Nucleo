@@ -6,7 +6,7 @@ import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,12 +18,12 @@ import java.util.List;
 @RequestMapping("/api/usuarios")
 @Tag(name = "Usuários", description = "Gerenciamento de usuários do sistema Nucleo")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    @GetMapping("/All")
+    @GetMapping("/all")
     @Operation(summary = "Listar todos os usuários")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
@@ -35,7 +35,8 @@ public class UsuarioController {
     @Operation(summary = "Buscar usuario logado")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail() {
-        Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        Usuario usuario = usuarioService.buscarPorId(usuarioId);
         if(usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

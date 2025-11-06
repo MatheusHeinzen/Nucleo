@@ -1,8 +1,8 @@
 package com.nucleo.controller;
 
 import com.nucleo.model.Beneficio;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.BeneficioService;
-import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,6 @@ import java.util.List;
 public class BeneficioController {
 
     private final BeneficioService beneficioService;
-    private final UsuarioService usuarioService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -45,7 +44,7 @@ public class BeneficioController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> buscarPorId(@PathVariable Long id) {
-        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         Beneficio beneficio = beneficioService.buscarPorIdEUsuario(id, usuarioId);
         return ResponseEntity.ok(beneficio);
     }
@@ -60,7 +59,7 @@ public class BeneficioController {
     @GetMapping("/tipo/{tipo}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<Beneficio>> buscarMeusPorTipo(@PathVariable Beneficio.TipoBeneficio tipo) {
-        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         List<Beneficio> beneficios = beneficioService.buscarPorUsuarioETipo(usuarioId, tipo);
         return ResponseEntity.ok(beneficios);
     }
@@ -68,7 +67,7 @@ public class BeneficioController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> atualizar(@PathVariable Long id, @RequestBody Beneficio beneficio) {
-        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         Beneficio beneficioAtualizado = beneficioService.atualizarMeu(id, beneficio, usuarioId);
         return ResponseEntity.ok(beneficioAtualizado);
     }
@@ -76,7 +75,7 @@ public class BeneficioController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         beneficioService.deletarMeu(id, usuarioId);
         return ResponseEntity.noContent().build();
     }

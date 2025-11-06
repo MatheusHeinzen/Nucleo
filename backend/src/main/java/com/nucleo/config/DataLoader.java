@@ -40,7 +40,7 @@ public class DataLoader implements CommandLineRunner {
                     .roles(Set.of(Usuario.Role.ROLE_ADMIN))
                     .build();
             usuarioRepository.save(admin);
-            System.out.println("✅ Usuário ADMIN criado: admin@nucleo.com / 123");
+            System.out.println("[OK] Usuário ADMIN criado: admin@nucleo.com / 123");
         }
 
         if (usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").isEmpty()) {
@@ -51,7 +51,7 @@ public class DataLoader implements CommandLineRunner {
                     .roles(Set.of(Usuario.Role.ROLE_USER))
                     .build();
             usuarioRepository.save(joao);
-            System.out.println("✅ Usuário USER criado: joao@nucleo.com / 123");
+            System.out.println("[OK] Usuário USER criado: joao@nucleo.com / 123");
         }
     }
 
@@ -111,7 +111,7 @@ public class DataLoader implements CommandLineRunner {
                     .tipo(Categoria.TipoCategoria.ENTRADA)
                     .build());
 
-            System.out.println("✅ 9 Categorias padrão criadas!");
+            System.out.println("[OK] 9 Categorias padrão criadas!");
         }
     }
 
@@ -143,7 +143,7 @@ public class DataLoader implements CommandLineRunner {
                     .usuario(joao)
                     .build());
 
-            System.out.println("✅ 3 Benefícios exemplo criados para João!");
+            System.out.println("[OK] 3 Benefícios exemplo criados para João!");
         }
     }
 
@@ -220,7 +220,7 @@ public class DataLoader implements CommandLineRunner {
                         .build());
             }
 
-            System.out.println("✅ 6 Transações exemplo criadas para João!");
+            System.out.println("[OK] 6 Transações exemplo criadas para João!");
         }
     }
 
@@ -261,7 +261,7 @@ public class DataLoader implements CommandLineRunner {
                         .build());
             }
 
-            System.out.println("✅ 3 Metas exemplo criadas para João!");
+            System.out.println("[OK] 3 Metas exemplo criadas para João!");
         }
     }
 }

@@ -8,7 +8,7 @@ import com.nucleo.model.Usuario;
 import com.nucleo.repository.BeneficioRepository;
 import com.nucleo.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,21 +16,15 @@ import java.util.List;
 import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
 
 @Service
+@RequiredArgsConstructor
 public class BeneficioService {
 
-    @Autowired
-    private BeneficioRepository beneficioRepository;
-
-    @Autowired
-    private UsuarioService usuarioService;
+    private final BeneficioRepository beneficioRepository;
+    private final UsuarioService usuarioService;
 
     public Beneficio criar(Beneficio beneficio) throws EntityNotCreatedException {
         try {
-            Beneficio novoBeneficio = beneficioRepository.save(beneficio);
-            if (novoBeneficio == null) {
-                throw new EntityNotCreatedException("beneficio.not-created");
-            }
-            return novoBeneficio;
+            return beneficioRepository.save(beneficio);
         } catch (Exception e) {
             throw new EntityNotCreatedException("beneficio.not-created");
         }
@@ -38,7 +32,8 @@ public class BeneficioService {
 
     public Beneficio criarParaUsuarioLogado(Beneficio beneficio) throws EntityNotCreatedException {
         try {
-            Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+            Long usuarioId = SecurityUtils.getCurrentUserId();
+            Usuario usuario = usuarioService.buscarPorId(usuarioId);
             beneficio.setUsuario(usuario);
             return beneficioRepository.save(beneficio);
         } catch (Exception e) {

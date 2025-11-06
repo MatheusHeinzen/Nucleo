@@ -3,11 +3,10 @@ package com.nucleo.controller;
 import com.nucleo.dto.TransacaoRequestDTO;
 import com.nucleo.dto.TransacaoResponseDTO;
 import com.nucleo.model.Transacao;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.TransacaoService;
-import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,11 +25,7 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class TransacaoController {
 
-    @Autowired
     private final TransacaoService transacaoService;
-
-    @Autowired
-    private final UsuarioService usuarioService;
 
     @PostMapping
     public ResponseEntity<?> criar(@RequestBody TransacaoRequestDTO request) {
@@ -50,7 +45,7 @@ public class TransacaoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
-        Long usuarioId = usuarioService.getUsuarioIdLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId);
         return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
@@ -105,14 +100,16 @@ public class TransacaoController {
 
     @GetMapping("/me/saldo")
     public ResponseEntity<BigDecimal> getMeuSaldo() {
-        return ResponseEntity.ok(transacaoService.getSaldoUsuarioLogado());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(transacaoService.getSaldo(usuarioId));
     }
 
     @GetMapping("/me/resumo")
     public ResponseEntity<String> getMeuResumo() {
-        BigDecimal entradas = transacaoService.getTotalEntradasUsuarioLogado();
-        BigDecimal saidas = transacaoService.getTotalSaidasUsuarioLogado();
-        BigDecimal saldo = transacaoService.getSaldoUsuarioLogado();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        BigDecimal entradas = transacaoService.getTotalEntradas(usuarioId);
+        BigDecimal saidas = transacaoService.getTotalSaidas(usuarioId);
+        BigDecimal saldo = transacaoService.getSaldo(usuarioId);
 
         String resumo = String.format(
                 "Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f",

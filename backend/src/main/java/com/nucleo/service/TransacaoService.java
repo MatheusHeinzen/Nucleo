@@ -11,30 +11,25 @@ import com.nucleo.repository.TransacaoRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.utils.EntityUtils;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TransacaoService {
 
-
-    @Autowired
-    private TransacaoRepository transacaoRepository;
-
-    @Autowired
-    private CategoriaService categoriaService;
-
-    @Autowired
-    private UsuarioService usuarioService;
+    private final TransacaoRepository transacaoRepository;
+    private final CategoriaService categoriaService;
+    private final UsuarioService usuarioService;
 
 
     public Transacao criar(TransacaoRequestDTO transacao) throws EntityNotCreatedException {
         try{
-
-            Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+            Long usuarioId = SecurityUtils.getCurrentUserId();
+            Usuario usuario = usuarioService.buscarPorId(usuarioId);
             Categoria categoria = categoriaService.buscarPorId(transacao.getCategoriaId());
             Transacao transacaoNova = Transacao.builder()
                     .descricao(transacao.getDescricao())
@@ -92,21 +87,6 @@ public class TransacaoService {
         return entradas.subtract(saidas);
     }
 
-    public BigDecimal getTotalEntradasUsuarioLogado() {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        return getTotalEntradas(usuarioId);
-    }
-
-    public BigDecimal getTotalSaidasUsuarioLogado() {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        return getTotalSaidas(usuarioId);
-    }
-
-    public BigDecimal getSaldoUsuarioLogado() {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        return getSaldo(usuarioId);
-    }
-
     public Transacao encontraPorId(Long id) throws EntityNotFoundException{
             return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
     }
@@ -124,8 +104,8 @@ public class TransacaoService {
 
     public Transacao atualizar(Long id, TransacaoRequestDTO transacao) throws EntityNotUpdatedException {
         try {
-
-            Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+            Long usuarioId = SecurityUtils.getCurrentUserId();
+            Usuario usuario = usuarioService.buscarPorId(usuarioId);
             if(usuario == null){
                 throw new EntityNotFoundException("usuario.not-found");
             }
@@ -169,7 +149,7 @@ public class TransacaoService {
     }
 
     public List<Transacao> buscarPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
-        Long usuarioId = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail()).getId();
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         return transacaoRepository.findByUsuarioAndPeriodo(usuarioId, dataInicio, dataFim);
     }
 
