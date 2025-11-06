@@ -1,6 +1,7 @@
 package com.nucleo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,7 +25,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", 401);
@@ -36,6 +36,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         }
         body.put("path", request.getServletPath());
 
-        new ObjectMapper().writeValue(response.getOutputStream(), body);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.writeValue(response.getOutputStream(), body);
     }
 }

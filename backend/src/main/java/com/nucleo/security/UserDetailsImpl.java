@@ -46,7 +46,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(Usuario usuario) {
         var authorities = usuario.getRoles().stream()
-                .map(role -> (GrantedAuthority) role::name)
+                .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.name()))
                 .toList();
 
         return new UserDetailsImpl(

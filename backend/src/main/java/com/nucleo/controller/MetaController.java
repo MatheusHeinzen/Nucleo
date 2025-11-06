@@ -1,13 +1,13 @@
 package com.nucleo.controller;
 
 import com.nucleo.model.Meta;
-import com.nucleo.repository.UsuarioRepository;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
-import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +16,10 @@ import java.util.List;
 @RequestMapping("/api/metas")
 @Tag(name = "Metas", description = "Gerenciamento de metas.")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class MetaController {
 
     private final MetaService metaService;
-    private final UsuarioRepository usuarioRepository;
-    private final UsuarioService usuarioService;
 
 
     /**
@@ -29,7 +28,7 @@ public class MetaController {
      */
     @PostMapping
     public ResponseEntity<Meta> criar(@RequestBody Meta meta) {
-        meta.setUsuarioId(usuarioService.getUsuarioIdLogado());
+        meta.setUsuarioId(SecurityUtils.getCurrentUserId());
         Meta novaMeta = metaService.criar(meta);
         return new ResponseEntity<>(novaMeta, HttpStatus.CREATED);
     }
@@ -40,19 +39,19 @@ public class MetaController {
      */
     @GetMapping
     public ResponseEntity<List<Meta>> listar() {
-        List<Meta> metas = metaService.listarPorUsuario(usuarioService.getUsuarioIdLogado());
+        List<Meta> metas = metaService.listarPorUsuario(SecurityUtils.getCurrentUserId());
         return ResponseEntity.ok(metas);
     }
 
-//    /**
-//     * Endpoint: GET /metas/{id}
-//     * Busca uma meta específica pelo seu ID.
-//     */
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
-//        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
-//        return ResponseEntity.ok(meta);
-//    }
+    /**
+     * Endpoint: GET /metas/{id}
+     * Busca uma meta específica pelo seu ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
+        Meta meta = metaService.buscarPorId(id, SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok(meta);
+    }
 
     /**
      * Endpoint: PUT /metas/{id}
@@ -60,7 +59,7 @@ public class MetaController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta) {
-        Meta metaAtualizada = metaService.atualizar(id, meta, usuarioService.getUsuarioIdLogado());
+        Meta metaAtualizada = metaService.atualizar(id, meta, SecurityUtils.getCurrentUserId());
         return ResponseEntity.ok(metaAtualizada);
     }
 
@@ -71,7 +70,7 @@ public class MetaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        metaService.cancelar(id, usuarioService.getUsuarioIdLogado());
+        metaService.cancelar(id, SecurityUtils.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 

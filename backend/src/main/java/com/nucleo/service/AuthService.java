@@ -8,16 +8,14 @@ import com.nucleo.exception.ResourceNotFoundException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.security.JwtTokenProvider;
+import com.nucleo.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,15 +38,7 @@ public class AuthService {
             var usuario = usuarioRepository.findByEmailAndAtivoTrue(request.getEmail())
                     .orElseThrow(() -> new ResourceNotFoundException("usuario.not-found"));
 
-            var jwtToken = jwtTokenProvider.generateToken(
-                    new User(
-                            usuario.getEmail(),
-                            "", // pode ser substituído por "" se não quiser carregar hash
-                            usuario.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(role.name()))
-                                    .collect(Collectors.toList())
-                    )
-            );
+            var jwtToken = jwtTokenProvider.generateToken(UserDetailsImpl.build(usuario));
 
             return AuthResponseDTO.builder()
                     .token("Bearer " + jwtToken)
@@ -75,22 +65,12 @@ public class AuthService {
             novoUsuario.setRoles(Set.of(Usuario.Role.ROLE_USER));
             novoUsuario.setAtivo(true);
 
-            // Salvar usuário
             Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
 
-            // Gerar token automaticamente
-            var jwtToken = jwtTokenProvider.generateToken(
-                    new User(
-                            usuarioSalvo.getEmail(),
-                            usuarioSalvo.getSenha(),
-                            usuarioSalvo.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(role.name()))
-                                    .collect(Collectors.toList())
-                    )
-            );
+            var jwtToken = jwtTokenProvider.generateToken(UserDetailsImpl.build(usuarioSalvo));
 
             return AuthResponseDTO.builder()
-                    .token(jwtToken)
+                    .token("Bearer " + jwtToken)
                     .email(usuarioSalvo.getEmail())
                     .roles(usuarioSalvo.getRoles())
                     .build();

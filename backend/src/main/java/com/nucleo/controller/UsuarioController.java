@@ -6,39 +6,37 @@ import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 
 @RestController
 @RequestMapping("/api/usuarios")
 @Tag(name = "Usuários", description = "Gerenciamento de usuários do sistema Nucleo")
-@CrossOrigin(origins = "*") // Permite acesso do frontend
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    // READ - Listar todos os usuários
-    @GetMapping("/All")
+    @GetMapping("/all")
     @Operation(summary = "Listar todos os usuários")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
         List<Usuario> usuarios = usuarioService.encontraTodos();
         return ResponseEntity.ok(usuarios);
     }
 
-    // READ - Buscar usuário por Email
     @GetMapping("/me")
     @Operation(summary = "Buscar usuario logado")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail() {
-        Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        Usuario usuario = usuarioService.buscarPorId(usuarioId);
         if(usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -46,11 +44,18 @@ public class UsuarioController {
 
     }
 
-    // UPDATE - Atualizar usuário
-//    @PreAuthorize("#id == authentication.principal.id or hasRo    le('ADMIN')")
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar um usuário existente")
-    public ResponseEntity<Usuario> atualizarUsuario( @Valid @RequestBody Usuario usuarioDetails) {
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar usuário por ID")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        return ResponseEntity.ok(usuario);
+    }
+
+    @PutMapping("/me")
+    @Operation(summary = "Atualizar dados do usuário logado")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Usuario> atualizarUsuario(@Valid @RequestBody Usuario usuarioDetails) {
         Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
@@ -59,9 +64,9 @@ public class UsuarioController {
     }
 
 
-    // DELETE - Deletar usuário
     @DeleteMapping
     @Operation(summary = "Deletar um usuário")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> deletarUsuario() {
         usuarioService.deletaUsuario();
         return ResponseEntity.ok().build();

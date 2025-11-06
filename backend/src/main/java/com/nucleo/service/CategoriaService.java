@@ -5,9 +5,8 @@ import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.repository.CategoriaRepository;
-import com.nucleo.utils.EntityUtils;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,18 +14,14 @@ import java.util.List;
 import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
 
 @Service
+@RequiredArgsConstructor
 public class CategoriaService {
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public Categoria criar(Categoria categoria) throws EntityNotCreatedException {
         try{
-            Categoria novaCategoria = categoriaRepository.save(categoria);
-            if (novaCategoria == null) {
-                throw new EntityNotCreatedException("categoria.not-created");
-            }
-            return novaCategoria;
+            return categoriaRepository.save(categoria);
         }catch (Exception e) {
             throw new EntityNotCreatedException("categoria.not-created");
         }
@@ -81,6 +76,5 @@ public class CategoriaService {
         }catch (Exception e) {
             throw new EntityNotDeletedException("categoria.not-deleted");
         }
-        // supondo que é soft delete mesmo
     }
 }
