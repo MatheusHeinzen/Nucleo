@@ -4,13 +4,11 @@ import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
-import com.nucleo.security.SecurityUtils;
 import com.nucleo.utils.EntityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -49,6 +47,15 @@ public class UsuarioService  {
             return u;
         }catch (Exception e){
             return null;
+        }
+    }
+
+    public Usuario buscarPorId(Long id) throws EntityNotFoundException {
+        try {
+            return usuarioRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("usuario.not-found"));
+        } catch (Exception e) {
+            throw new EntityNotFoundException("usuario.not-found");
         }
     }
 

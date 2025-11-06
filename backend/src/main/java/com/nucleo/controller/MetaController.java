@@ -1,7 +1,6 @@
 package com.nucleo.controller;
 
 import com.nucleo.model.Meta;
-import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.service.MetaService;
 import com.nucleo.service.UsuarioService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +20,6 @@ import java.util.List;
 public class MetaController {
 
     private final MetaService metaService;
-    private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
 
 
@@ -46,15 +44,15 @@ public class MetaController {
         return ResponseEntity.ok(metas);
     }
 
-//    /**
-//     * Endpoint: GET /metas/{id}
-//     * Busca uma meta específica pelo seu ID.
-//     */
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
-//        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
-//        return ResponseEntity.ok(meta);
-//    }
+    /**
+     * Endpoint: GET /metas/{id}
+     * Busca uma meta específica pelo seu ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
+        Meta meta = metaService.buscarPorId(id, usuarioService.getUsuarioIdLogado());
+        return ResponseEntity.ok(meta);
+    }
 
     /**
      * Endpoint: PUT /metas/{id}

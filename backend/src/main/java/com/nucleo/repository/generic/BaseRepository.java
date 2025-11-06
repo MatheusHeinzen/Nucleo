@@ -1,4 +1,3 @@
-// BaseRepository.java
 package com.nucleo.repository.generic;
 
 import com.nucleo.model.base.BaseEntity;

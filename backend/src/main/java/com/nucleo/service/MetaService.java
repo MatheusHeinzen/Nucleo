@@ -6,7 +6,6 @@ import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Meta;
 import com.nucleo.model.StatusMeta;
 import com.nucleo.repository.MetaRepository;
-import jakarta.persistence.EntityExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,9 +24,13 @@ public class MetaService {
 
     public Meta criar(Meta meta) throws EntityNotCreatedException {
         try {
+            if (meta.getStatus() == null) {
+                meta.setStatus(StatusMeta.ativa);
+            }
             return metaRepository.save(meta);
         } catch (Exception e) {
-            throw new EntityNotCreatedException("meta.not-created");
+            e.printStackTrace();
+            throw new EntityNotCreatedException("Erro ao criar meta: " + e.getMessage());
         }
     }
 
@@ -41,14 +44,9 @@ public class MetaService {
 
 
     public Meta buscarPorId(Long id, Long usuarioId) {
-        try {
-            return metaRepository.findById(id)
-                    .filter(meta -> meta.getUsuarioId().equals(usuarioId))
-                    .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário."));
-
-        } catch (Exception e) {
-            throw new EntityNotFoundException("meta.not-found");
-        }
+        return metaRepository.findById(id)
+                .filter(meta -> meta.getUsuarioId().equals(usuarioId))
+                .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário."));
     }
 
     public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {

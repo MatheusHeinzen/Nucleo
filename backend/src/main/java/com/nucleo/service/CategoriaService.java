@@ -81,6 +81,5 @@ public class CategoriaService {
         }catch (Exception e) {
             throw new EntityNotDeletedException("categoria.not-deleted");
         }
-        // supondo que é soft delete mesmo
     }
 }

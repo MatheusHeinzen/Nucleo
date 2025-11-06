@@ -1,13 +1,18 @@
 package com.nucleo.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
 @Entity
 @Table(name = "metas")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Meta {
 
     @Id
@@ -31,5 +36,6 @@ public class Meta {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private StatusMeta status = StatusMeta.ativa;
 }

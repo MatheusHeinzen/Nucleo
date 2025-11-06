@@ -20,24 +20,19 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
     Transacao findTransacaoByUsuario_Id(Long id);
     Transacao findTransacaoByUsuario_IdAndId(Long usuarioId, Long id);
 
-    // Buscar transações por usuário
     List<Transacao> findAllByUsuarioIdAndAtivoTrue(Long usuarioId);
 
     Page<Transacao> findAllByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
 
-    // Buscar por período
     List<Transacao> findAllByUsuarioIdAndDataBetweenAndAtivoTrue(
             Long usuarioId, LocalDate inicio, LocalDate fim);
 
-    // Buscar por categoria
 
     List<Transacao> findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(Long usuarioId, Long categoriaId);
 
-    // Buscar por tipo (entrada/saída)
     List<Transacao> findAllByUsuarioIdAndTipoAndAtivoTrue(
             Long usuarioId, Transacao.TipoTransacao tipo);
 
-    // Soma de valores por tipo
     @Query("SELECT COALESCE(SUM(t.valor), 0) FROM Transacao t WHERE t.usuario.id = :usuarioId AND t.tipo = :tipo AND t.ativo = true")
     BigDecimal sumValorByUsuarioIdAndTipo(@Param("usuarioId") Long usuarioId, @Param("tipo") Transacao.TipoTransacao tipo);
 

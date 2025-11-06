@@ -12,11 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -47,10 +43,18 @@ public class UsuarioController {
 
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Atualizar um usuário existente")
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar usuário por ID")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        return ResponseEntity.ok(usuario);
+    }
+
+    @PutMapping("/me")
+    @Operation(summary = "Atualizar dados do usuário logado")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Usuario> atualizarUsuario( @Valid @RequestBody Usuario usuarioDetails) {
+    public ResponseEntity<Usuario> atualizarUsuario(@Valid @RequestBody Usuario usuarioDetails) {
         Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
         if (usuario == null) {
             return ResponseEntity.notFound().build();

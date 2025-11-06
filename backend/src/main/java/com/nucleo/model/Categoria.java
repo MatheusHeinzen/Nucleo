@@ -19,7 +19,7 @@ public class Categoria extends BaseEntity {
     private String descricao;
 
     @Enumerated(EnumType.STRING)
-    private TipoCategoria tipo; // ENTRADA ou SAIDA
+    private TipoCategoria tipo;
 
     public enum TipoCategoria {
         ENTRADA,

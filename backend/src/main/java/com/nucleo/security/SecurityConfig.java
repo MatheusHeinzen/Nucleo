@@ -18,14 +18,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity  // permite usar @PreAuthorize nos controllers,
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final JwtAuthenticationEntryPoint jwtEntryPoint; // 🔹 adicione isso
+    private final JwtAuthenticationEntryPoint jwtEntryPoint;
 
 
     @Bean

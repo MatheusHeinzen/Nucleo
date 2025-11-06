@@ -1,5 +1,6 @@
 package com.nucleo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,6 +29,7 @@ public class Beneficio extends BaseEntity {
     @Column(precision = 10, scale = 2)
     private BigDecimal valor;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
