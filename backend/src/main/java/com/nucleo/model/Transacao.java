@@ -1,35 +1,46 @@
 package com.nucleo.model;
 
+import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "transacoes")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transacao {
-    public enum Tipo { RECEITA, DESPESA }
+public class Transacao extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Column(nullable = false)
     private String descricao;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
+
+    @Column(nullable = false)
     private LocalDate data;
 
     @Enumerated(EnumType.STRING)
-    private Tipo tipo;
+    @Column(nullable = false)
+    private TipoTransacao tipo;
 
-    private String categoria;
-
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
+    // Relacionamento com Usuario
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+
+    // ✅ RELACIONAMENTO COM CATEGORIA GLOBAL
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
+
+    public enum TipoTransacao {
+        ENTRADA, SAIDA
+    }
+
 }

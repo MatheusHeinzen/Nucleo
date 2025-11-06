@@ -1,42 +1,32 @@
 package com.nucleo.model;
 
+import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.util.List;
+import lombok.*;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 @Entity
+@Table(name = "usuarios")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Usuario extends BaseEntity {
 
     private String nome;
-
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
-
+    @Column(nullable = false)
     private String senha;
 
-    private String regiao;
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<Role> roles = Set.of(Role.ROLE_USER);
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Transacao> transacoes;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Meta> metas;
-
-    // CONSTRUTOR personalizado (sem id e listas)
-    public Usuario(String nome, String email, String senha) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
+    public enum Role {
+        ROLE_USER, ROLE_ADMIN
     }
 }
