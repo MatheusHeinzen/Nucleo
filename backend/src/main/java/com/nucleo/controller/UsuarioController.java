@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,23 +21,23 @@ import static com.nucleo.security.SecurityUtils.getCurrentUserEmail;
 @RestController
 @RequestMapping("/api/usuarios")
 @Tag(name = "Usuários", description = "Gerenciamento de usuários do sistema Nucleo")
-@CrossOrigin(origins = "*") // Permite acesso do frontend
+@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    // READ - Listar todos os usuários
     @GetMapping("/All")
     @Operation(summary = "Listar todos os usuários")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
         List<Usuario> usuarios = usuarioService.encontraTodos();
         return ResponseEntity.ok(usuarios);
     }
 
-    // READ - Buscar usuário por Email
     @GetMapping("/me")
     @Operation(summary = "Buscar usuario logado")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail() {
         Usuario usuario = usuarioService.buscarUsuarioPorEmail(SecurityUtils.getCurrentUserEmail());
         if(usuario == null) {
@@ -46,10 +47,9 @@ public class UsuarioController {
 
     }
 
-    // UPDATE - Atualizar usuário
-//    @PreAuthorize("#id == authentication.principal.id or hasRo    le('ADMIN')")
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar um usuário existente")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Usuario> atualizarUsuario( @Valid @RequestBody Usuario usuarioDetails) {
         Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
         if (usuario == null) {
@@ -59,9 +59,9 @@ public class UsuarioController {
     }
 
 
-    // DELETE - Deletar usuário
     @DeleteMapping
     @Operation(summary = "Deletar um usuário")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> deletarUsuario() {
         usuarioService.deletaUsuario();
         return ResponseEntity.ok().build();

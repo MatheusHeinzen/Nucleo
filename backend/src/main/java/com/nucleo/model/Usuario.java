@@ -24,6 +24,7 @@ public class Usuario extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
+    @Builder.Default
     private Set<Role> roles = Set.of(Role.ROLE_USER);
 
     public enum Role {

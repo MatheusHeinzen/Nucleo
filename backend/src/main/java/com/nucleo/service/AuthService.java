@@ -90,7 +90,7 @@ public class AuthService {
             );
 
             return AuthResponseDTO.builder()
-                    .token(jwtToken)
+                    .token("Bearer " + jwtToken)
                     .email(usuarioSalvo.getEmail())
                     .roles(usuarioSalvo.getRoles())
                     .build();
