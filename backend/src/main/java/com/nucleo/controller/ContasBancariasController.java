@@ -45,7 +45,9 @@ public class ContasBancariasController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ContasBancarias> buscarPorId(@PathVariable Long id) {
-        ContasBancarias conta = contasService.buscarPorId(id, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        ContasBancarias conta = contasService.buscarPorId(id, usuarioId, isAdmin);
         return ResponseEntity.ok(conta);
     }
 
@@ -59,14 +61,18 @@ public class ContasBancariasController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ContasBancarias> atualizar(@PathVariable Long id, @RequestBody ContasBancarias conta) {
-        ContasBancarias contaAtualizada = contasService.atualizar(id, conta, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        ContasBancarias contaAtualizada = contasService.atualizar(id, conta, usuarioId, isAdmin);
         return ResponseEntity.ok(contaAtualizada);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        contasService.deletar(id, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        contasService.deletar(id, usuarioId, isAdmin);
         return ResponseEntity.noContent().build();
     }
 }

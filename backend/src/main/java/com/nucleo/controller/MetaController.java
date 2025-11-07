@@ -16,61 +16,63 @@ import java.util.List;
 @RequestMapping("/api/metas")
 @Tag(name = "Metas", description = "Gerenciamento de metas.")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class MetaController {
 
     private final MetaService metaService;
 
-
-    /**
-     * Endpoint: POST /metas
-     * Cria uma nova meta financeira.
-     */
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Meta> criar(@RequestBody Meta meta) {
         meta.setUsuarioId(SecurityUtils.getCurrentUserId());
         Meta novaMeta = metaService.criar(meta);
         return new ResponseEntity<>(novaMeta, HttpStatus.CREATED);
     }
 
-    /**
-     * Endpoint: GET /metas
-     * Lista todas as metas do usuário logado.
-     */
-    @GetMapping
-    public ResponseEntity<List<Meta>> listar() {
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<Meta>> listarMinhas() {
         List<Meta> metas = metaService.listarPorUsuario(SecurityUtils.getCurrentUserId());
         return ResponseEntity.ok(metas);
     }
 
-    /**
-     * Endpoint: GET /metas/{id}
-     * Busca uma meta específica pelo seu ID.
-     */
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Meta>> listarTodas() {
+        List<Meta> metas = metaService.listarTodas();
+        return ResponseEntity.ok(metas);
+    }
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
-        Meta meta = metaService.buscarPorId(id, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        Meta meta = metaService.buscarPorId(id, usuarioId, isAdmin);
         return ResponseEntity.ok(meta);
     }
 
-    /**
-     * Endpoint: PUT /metas/{id}
-     * Atualiza uma meta existente.
-     */
+    @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Meta>> listarPorUsuario(@PathVariable Long usuarioId) {
+        List<Meta> metas = metaService.listarPorUsuario(usuarioId);
+        return ResponseEntity.ok(metas);
+    }
+
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta) {
-        Meta metaAtualizada = metaService.atualizar(id, meta, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        Meta metaAtualizada = metaService.atualizar(id, meta, usuarioId, isAdmin);
         return ResponseEntity.ok(metaAtualizada);
     }
 
-    /**
-     * Endpoint: DELETE /metas/{id}
-     * Cancela uma meta (altera seu status para 'cancelada').
-     */
-
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        metaService.cancelar(id, SecurityUtils.getCurrentUserId());
+        Long usuarioId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        metaService.cancelar(id, usuarioId, isAdmin);
         return ResponseEntity.noContent().build();
     }
 

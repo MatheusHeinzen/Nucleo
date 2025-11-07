@@ -46,7 +46,8 @@ public class TransacaoController {
     @GetMapping("/{id}")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId);
+        boolean isAdmin = SecurityUtils.isAdmin();
+        Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId, isAdmin);
         return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
     @PutMapping("/{id}")
@@ -59,7 +60,8 @@ public class TransacaoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        transacaoService.excluir(id);
+        boolean isAdmin = SecurityUtils.isAdmin();
+        transacaoService.excluir(id, isAdmin);
         return ResponseEntity.noContent().build();
     }
 

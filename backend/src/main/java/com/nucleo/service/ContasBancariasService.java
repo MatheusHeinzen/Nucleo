@@ -32,13 +32,17 @@ public class ContasBancariasService {
         return contasRepository.findAll();
     }
 
-    public ContasBancarias buscarPorId(Long id, Long usuarioId) {
+    public ContasBancarias buscarPorId(Long id, Long usuarioId, boolean isAdmin) {
+        if (isAdmin) {
+            return contasRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
+        }
         return contasRepository.findByIdAndUsuarioIdAndAtivoTrue(id, usuarioId)
                 .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada ou inativa."));
     }
 
-    public ContasBancarias atualizar(Long id, ContasBancarias contaAtualizada, Long usuarioId) {
-        ContasBancarias contaExistente = buscarPorId(id, usuarioId);
+    public ContasBancarias atualizar(Long id, ContasBancarias contaAtualizada, Long usuarioId, boolean isAdmin) {
+        ContasBancarias contaExistente = buscarPorId(id, usuarioId, isAdmin);
 
         contaExistente.setInstituicao(contaAtualizada.getInstituicao());
         contaExistente.setTipo(contaAtualizada.getTipo());
@@ -49,9 +53,15 @@ public class ContasBancariasService {
         return contasRepository.save(contaExistente);
     }
 
-    public void deletar(Long id, Long usuarioId) {
-        ContasBancarias conta = contasRepository.findByIdAndUsuarioId(id, usuarioId)
-                .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
+    public void deletar(Long id, Long usuarioId, boolean isAdmin) {
+        ContasBancarias conta;
+        if (isAdmin) {
+            conta = contasRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
+        } else {
+            conta = contasRepository.findByIdAndUsuarioId(id, usuarioId)
+                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
+        }
 
         conta.setAtivo(false);
         conta.setDeletadoEm(LocalDateTime.now());

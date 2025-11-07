@@ -20,12 +20,14 @@ public class DataLoader implements CommandLineRunner {
     private final TransacaoRepository transacaoRepository;
     private final BeneficioRepository beneficioRepository;
     private final MetaRepository metaRepository;
+    private final ContasBancariasRepository contasBancariasRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
         criarUsuarios();
         criarCategoriasPadrao();
+        criarContasBancariasExemplo();
         criarBeneficiosExemplo();
         criarTransacoesExemplo();
         criarMetasExemplo();
@@ -47,7 +49,7 @@ public class DataLoader implements CommandLineRunner {
             Usuario joao = Usuario.builder()
                     .nome("João Silva")
                     .email("joao@nucleo.com")
-                    .senha(passwordEncoder.encode("123"))
+                    .senha(passwordEncoder.encode("string"))
                     .roles(Set.of(Usuario.Role.ROLE_USER))
                     .build();
             usuarioRepository.save(joao);
@@ -112,6 +114,50 @@ public class DataLoader implements CommandLineRunner {
                     .build());
 
             System.out.println("[OK] 9 Categorias padrão criadas!");
+        }
+    }
+
+    private void criarContasBancariasExemplo() {
+        if (contasBancariasRepository.count() == 0) {
+            var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
+
+            contasBancariasRepository.save(ContasBancarias.builder()
+                    .instituicao("Nubank")
+                    .tipo(TipoConta.CORRENTE)
+                    .apelido("Conta Principal")
+                    .moeda("BRL")
+                    .saldoInicial(new BigDecimal("2500.00"))
+                    .usuario(joao)
+                    .build());
+
+            contasBancariasRepository.save(ContasBancarias.builder()
+                    .instituicao("Banco Inter")
+                    .tipo(TipoConta.POUPANCA)
+                    .apelido("Poupança")
+                    .moeda("BRL")
+                    .saldoInicial(new BigDecimal("5000.00"))
+                    .usuario(joao)
+                    .build());
+
+            contasBancariasRepository.save(ContasBancarias.builder()
+                    .instituicao("Banco do Brasil")
+                    .tipo(TipoConta.CORRENTE)
+                    .apelido("Conta Salário")
+                    .moeda("BRL")
+                    .saldoInicial(new BigDecimal("1200.00"))
+                    .usuario(joao)
+                    .build());
+
+            contasBancariasRepository.save(ContasBancarias.builder()
+                    .instituicao("Nubank")
+                    .tipo(TipoConta.CARTAO)
+                    .apelido("Cartão Roxinho")
+                    .moeda("BRL")
+                    .saldoInicial(BigDecimal.ZERO)
+                    .usuario(joao)
+                    .build());
+
+            System.out.println("[OK] 4 Contas bancárias exemplo criadas para João!");
         }
     }
 

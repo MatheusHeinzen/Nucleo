@@ -33,4 +33,13 @@ public class SecurityUtils {
         }
         return null;
     }
+
+    public static boolean isAdmin() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getAuthorities() != null) {
+            return authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+        }
+        return false;
+    }
 }

@@ -45,7 +45,8 @@ public class BeneficioController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> buscarPorId(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        Beneficio beneficio = beneficioService.buscarPorIdEUsuario(id, usuarioId);
+        boolean isAdmin = SecurityUtils.isAdmin();
+        Beneficio beneficio = beneficioService.buscarPorIdEUsuario(id, usuarioId, isAdmin);
         return ResponseEntity.ok(beneficio);
     }
 
@@ -68,7 +69,8 @@ public class BeneficioController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> atualizar(@PathVariable Long id, @RequestBody Beneficio beneficio) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        Beneficio beneficioAtualizado = beneficioService.atualizarMeu(id, beneficio, usuarioId);
+        boolean isAdmin = SecurityUtils.isAdmin();
+        Beneficio beneficioAtualizado = beneficioService.atualizarMeu(id, beneficio, usuarioId, isAdmin);
         return ResponseEntity.ok(beneficioAtualizado);
     }
 
@@ -76,7 +78,8 @@ public class BeneficioController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        beneficioService.deletarMeu(id, usuarioId);
+        boolean isAdmin = SecurityUtils.isAdmin();
+        beneficioService.deletarMeu(id, usuarioId, isAdmin);
         return ResponseEntity.noContent().build();
     }
 }
