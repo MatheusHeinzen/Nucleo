@@ -1,24 +1,26 @@
 package com.nucleo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "contas_bancarias")
-public class ContasBancarias {
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ContasBancarias extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "usuario_id", nullable = false)
-    private Long usuarioId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(nullable = false, length = 80)
     private String instituicao;
@@ -31,24 +33,13 @@ public class ContasBancarias {
     private String apelido;
 
     @Column(length = 3)
+    @Builder.Default
     private String moeda = "BRL";
 
     @Column(name = "saldo_inicial", precision = 14, scale = 2)
+    @Builder.Default
     private BigDecimal saldoInicial = BigDecimal.ZERO;
-
-    @Column(nullable = false)
-    private boolean ativo = true;
-
-    @CreationTimestamp
-    @Column(name = "criado_em", updatable = false)
-    private LocalDateTime criadoEm;
-
-    @UpdateTimestamp
-    @Column(name = "atualizado_em")
-    private LocalDateTime atualizadoEm;
 
     @Column(name = "deletado_em")
     private LocalDateTime deletadoEm;
-
-  
 }
