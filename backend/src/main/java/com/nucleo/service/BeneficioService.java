@@ -91,12 +91,12 @@ public class BeneficioService {
         }
     }
 
-    public Beneficio buscarPorIdEUsuario(Long id, Long usuarioId) throws EntityNotFoundException {
+    public Beneficio buscarPorIdEUsuario(Long id, Long usuarioId, boolean isAdmin) throws EntityNotFoundException {
         try {
             Beneficio beneficio = beneficioRepository.findByIdAndAtivoTrue(id)
                     .orElseThrow(() -> new EntityNotFoundException("Beneficio não encontrado"));
             
-            if (!beneficio.getUsuario().getId().equals(usuarioId)) {
+            if (!isAdmin && !beneficio.getUsuario().getId().equals(usuarioId)) {
                 throw new EntityNotFoundException("Acesso negado a este benefício");
             }
             
@@ -123,9 +123,9 @@ public class BeneficioService {
         }
     }
 
-    public Beneficio atualizarMeu(Long id, Beneficio beneficioAtualizado, Long usuarioId) throws EntityNotUpdatedException {
+    public Beneficio atualizarMeu(Long id, Beneficio beneficioAtualizado, Long usuarioId, boolean isAdmin) throws EntityNotUpdatedException {
         try {
-            Beneficio existente = buscarPorIdEUsuario(id, usuarioId);
+            Beneficio existente = buscarPorIdEUsuario(id, usuarioId, isAdmin);
 
             atualizarSeDiferente(existente::setNome, beneficioAtualizado.getNome(), existente.getNome());
             atualizarSeDiferente(existente::setDescricao, beneficioAtualizado.getDescricao(), existente.getDescricao());
@@ -148,9 +148,9 @@ public class BeneficioService {
         }
     }
 
-    public void deletarMeu(Long id, Long usuarioId) throws EntityNotDeletedException {
+    public void deletarMeu(Long id, Long usuarioId, boolean isAdmin) throws EntityNotDeletedException {
         try {
-            Beneficio beneficio = buscarPorIdEUsuario(id, usuarioId);
+            Beneficio beneficio = buscarPorIdEUsuario(id, usuarioId, isAdmin);
             beneficioRepository.softDelete(beneficio.getId());
         } catch (Exception e) {
             throw new EntityNotDeletedException("beneficio.not-deleted");

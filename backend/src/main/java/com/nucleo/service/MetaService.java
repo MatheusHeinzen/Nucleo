@@ -42,18 +42,31 @@ public class MetaService {
         }
     }
 
-
-    public Meta buscarPorId(Long id, Long usuarioId) {
-        return metaRepository.findById(id)
-                .filter(meta -> meta.getUsuarioId().equals(usuarioId))
-                .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário."));
+    public List<Meta> listarTodas() throws EntityNotFoundException {
+        try {
+            return metaRepository.findAll();
+        } catch (Exception e) {
+            throw new EntityNotFoundException("meta.not-found");
+        }
     }
 
-    public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {
+
+    public Meta buscarPorId(Long id, Long usuarioId, boolean isAdmin) {
+        Meta meta = metaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada."));
+        
+        if (!isAdmin && !meta.getUsuarioId().equals(usuarioId)) {
+            throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
+        }
+        
+        return meta;
+    }
+
+    public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId, boolean isAdmin) {
 
         try {
 
-            Meta metaExistente = buscarPorId(id, usuarioId);
+            Meta metaExistente = buscarPorId(id, usuarioId, isAdmin);
 
             atualizarSeDiferente(metaExistente::setTitulo, metaAtualizada.getTitulo(), metaExistente.getTitulo());
             atualizarSeDiferente(metaExistente::setValorAlvo, metaAtualizada.getValorAlvo(), metaExistente.getValorAlvo());
@@ -68,10 +81,10 @@ public class MetaService {
 
     }
 
-    public void cancelar(Long id, Long usuarioId) throws EntityNotDeletedException {
+    public void cancelar(Long id, Long usuarioId, boolean isAdmin) throws EntityNotDeletedException {
         try {
 
-            Meta meta = buscarPorId(id, usuarioId);
+            Meta meta = buscarPorId(id, usuarioId, isAdmin);
             meta.setStatus(StatusMeta.cancelada);
             metaRepository.save(meta);
         } catch (Exception e) {

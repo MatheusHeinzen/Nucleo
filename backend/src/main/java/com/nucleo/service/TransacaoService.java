@@ -91,11 +91,11 @@ public class TransacaoService {
             return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
     }
 
-    public Transacao buscarPorIdEUsuario(Long id, Long usuarioId) throws EntityNotFoundException {
+    public Transacao buscarPorIdEUsuario(Long id, Long usuarioId, boolean isAdmin) throws EntityNotFoundException {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
         
-        if (!transacao.getUsuario().getId().equals(usuarioId)) {
+        if (!isAdmin && !transacao.getUsuario().getId().equals(usuarioId)) {
             throw new EntityNotFoundException("Transação não encontrada ou não pertence a este usuário.");
         }
         
@@ -110,7 +110,7 @@ public class TransacaoService {
                 throw new EntityNotFoundException("usuario.not-found");
             }
 
-            var transacaoExistente = buscarPorIdEUsuario(id, usuario.getId());
+            var transacaoExistente = buscarPorIdEUsuario(id, usuario.getId(), false);
             if(transacaoExistente == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
@@ -134,10 +134,10 @@ public class TransacaoService {
         }
     }
 
-    public void excluir(Long id) throws EntityNotFoundException, EntityNotDeletedException {
+    public void excluir(Long id, boolean isAdmin) throws EntityNotFoundException, EntityNotDeletedException {
         try {
             Long usuarioId = SecurityUtils.getCurrentUserId();
-            Transacao t = buscarPorIdEUsuario(id, usuarioId);
+            Transacao t = buscarPorIdEUsuario(id, usuarioId, isAdmin);
             if(t == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
