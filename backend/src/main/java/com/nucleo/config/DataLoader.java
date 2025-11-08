@@ -196,42 +196,57 @@ public class DataLoader implements CommandLineRunner {
     private void criarTransacoesExemplo() {
         if (transacaoRepository.count() == 0) {
             var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
+            var contaPrincipal = contasBancariasRepository.findByApelidoAndUsuarioId("Conta Principal", joao.getId())
+                    .orElseGet(() -> contasBancariasRepository.save(
+                            ContasBancarias.builder()
+                                    .instituicao("Nubank")
+                                    .tipo(TipoConta.CORRENTE)
+                                    .apelido("Conta Principal")
+                                    .moeda("BRL")
+                                    .saldoInicial(new BigDecimal("2500.00"))
+                                    .usuario(joao)
+                                    .build()
+                    ));
+
             var categoriaSalario = categoriaRepository.findByNome("Salário");
             var categoriaAlimentacao = categoriaRepository.findByNome("Alimentação");
             var categoriaTransporte = categoriaRepository.findByNome("Transporte");
             var categoriaLazer = categoriaRepository.findByNome("Lazer");
             var categoriaFreelance = categoriaRepository.findByNome("Freelance");
 
-            if (categoriaSalario.isPresent()) {
-                transacaoRepository.save(Transacao.builder()
-                        .descricao("Salário Novembro")
-                        .valor(new BigDecimal("5000.00"))
-                        .data(LocalDate.now().minusDays(5))
-                        .tipo(Transacao.TipoTransacao.ENTRADA)
-                        .categoria(categoriaSalario.get())
-                        .usuario(joao)
-                        .build());
-            }
+            categoriaSalario.ifPresent(c ->
+                    transacaoRepository.save(Transacao.builder()
+                            .descricao("Salário Novembro")
+                            .valor(new BigDecimal("5000.00"))
+                            .data(LocalDate.now().minusDays(5))
+                            .tipo(Transacao.TipoTransacao.ENTRADA)
+                            .categoria(c)
+                            .usuario(joao)
+                            .conta(contaPrincipal) // ✅ associada à conta
+                            .build())
+            );
 
-            if (categoriaFreelance.isPresent()) {
-                transacaoRepository.save(Transacao.builder()
-                        .descricao("Trabalho Freelance - Site")
-                        .valor(new BigDecimal("1200.00"))
-                        .data(LocalDate.now().minusDays(3))
-                        .tipo(Transacao.TipoTransacao.ENTRADA)
-                        .categoria(categoriaFreelance.get())
-                        .usuario(joao)
-                        .build());
-            }
+            categoriaFreelance.ifPresent(c ->
+                    transacaoRepository.save(Transacao.builder()
+                            .descricao("Trabalho Freelance - Site")
+                            .valor(new BigDecimal("1200.00"))
+                            .data(LocalDate.now().minusDays(3))
+                            .tipo(Transacao.TipoTransacao.ENTRADA)
+                            .categoria(c)
+                            .usuario(joao)
+                            .conta(contaPrincipal)
+                            .build())
+            );
 
-            if (categoriaAlimentacao.isPresent()) {
+            categoriaAlimentacao.ifPresent(c -> {
                 transacaoRepository.save(Transacao.builder()
                         .descricao("Supermercado Atacadão")
                         .valor(new BigDecimal("350.50"))
                         .data(LocalDate.now().minusDays(4))
                         .tipo(Transacao.TipoTransacao.SAIDA)
-                        .categoria(categoriaAlimentacao.get())
+                        .categoria(c)
                         .usuario(joao)
+                        .conta(contaPrincipal)
                         .build());
 
                 transacaoRepository.save(Transacao.builder()
@@ -239,32 +254,35 @@ public class DataLoader implements CommandLineRunner {
                         .valor(new BigDecimal("89.90"))
                         .data(LocalDate.now().minusDays(1))
                         .tipo(Transacao.TipoTransacao.SAIDA)
-                        .categoria(categoriaAlimentacao.get())
+                        .categoria(c)
                         .usuario(joao)
+                        .conta(contaPrincipal)
                         .build());
-            }
+            });
 
-            if (categoriaTransporte.isPresent()) {
-                transacaoRepository.save(Transacao.builder()
-                        .descricao("Uber para trabalho")
-                        .valor(new BigDecimal("45.00"))
-                        .data(LocalDate.now().minusDays(2))
-                        .tipo(Transacao.TipoTransacao.SAIDA)
-                        .categoria(categoriaTransporte.get())
-                        .usuario(joao)
-                        .build());
-            }
+            categoriaTransporte.ifPresent(c ->
+                    transacaoRepository.save(Transacao.builder()
+                            .descricao("Uber para trabalho")
+                            .valor(new BigDecimal("45.00"))
+                            .data(LocalDate.now().minusDays(2))
+                            .tipo(Transacao.TipoTransacao.SAIDA)
+                            .categoria(c)
+                            .usuario(joao)
+                            .conta(contaPrincipal)
+                            .build())
+            );
 
-            if (categoriaLazer.isPresent()) {
-                transacaoRepository.save(Transacao.builder()
-                        .descricao("Cinema IMAX")
-                        .valor(new BigDecimal("65.00"))
-                        .data(LocalDate.now().minusDays(1))
-                        .tipo(Transacao.TipoTransacao.SAIDA)
-                        .categoria(categoriaLazer.get())
-                        .usuario(joao)
-                        .build());
-            }
+            categoriaLazer.ifPresent(c ->
+                    transacaoRepository.save(Transacao.builder()
+                            .descricao("Cinema IMAX")
+                            .valor(new BigDecimal("65.00"))
+                            .data(LocalDate.now().minusDays(1))
+                            .tipo(Transacao.TipoTransacao.SAIDA)
+                            .categoria(c)
+                            .usuario(joao)
+                            .conta(contaPrincipal)
+                            .build())
+            );
 
             System.out.println("[OK] 6 Transações exemplo criadas para João!");
         }

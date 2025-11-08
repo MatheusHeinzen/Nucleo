@@ -13,5 +13,5 @@ public class TransacaoRequestDTO {
     private LocalDate data;
     private Transacao.TipoTransacao tipo;
     private Long categoriaId;
-    private Long usuarioId;
+    private Long contaId;
 }

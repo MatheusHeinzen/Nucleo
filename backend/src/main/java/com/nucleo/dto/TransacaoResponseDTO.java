@@ -20,6 +20,7 @@ public class TransacaoResponseDTO {
     private LocalDateTime dataAtualizacao;
     private Long usuarioId;
     private String usuarioNome;
+    private Long contaId;
 
     public static TransacaoResponseDTO fromEntity(Transacao transacao) {
         TransacaoResponseDTO response = new TransacaoResponseDTO();
@@ -34,6 +35,7 @@ public class TransacaoResponseDTO {
         response.setDataAtualizacao(transacao.getDataAtualizacao());
         response.setUsuarioId(transacao.getUsuario().getId());
         response.setUsuarioNome(transacao.getUsuario().getNome());
+        response.setContaId(transacao.getConta().getId());
         return response;
     }
 }

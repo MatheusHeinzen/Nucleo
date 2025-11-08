@@ -15,4 +15,8 @@ public interface ContasBancariasRepository extends JpaRepository<ContasBancarias
     Optional<ContasBancarias> findByIdAndUsuarioIdAndAtivoTrue(Long id, Long usuarioId);
 
     Optional<ContasBancarias> findByIdAndUsuarioId(Long id, Long usuarioId);
+
+    Optional<ContasBancarias> findByApelidoAndUsuarioId(String apelido, Long usuarioId);
+
+
 }
