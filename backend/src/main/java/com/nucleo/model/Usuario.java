@@ -3,6 +3,8 @@ package com.nucleo.model;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Set;
 
@@ -10,9 +12,10 @@ import java.util.Set;
 @Table(name = "usuarios")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Usuario extends BaseEntity {
 
     @Column

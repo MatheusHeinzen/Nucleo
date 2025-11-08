@@ -3,14 +3,17 @@ package com.nucleo.model;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "categorias")
 @Getter
 @Setter
-@Builder
+@SuperBuilder      // ✅ herda builder para as filhas
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Categoria extends BaseEntity {
 
     @Column(unique = true, nullable = false)

@@ -32,12 +32,12 @@ public class TransacaoService {
         try{
             Long usuarioId = getCurrentUserId();
             Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
-            Categoria categoria = categoriaService.buscarPorId(transacao.getCategoriaId());
+            Categoria categoria = categoriaService.buscarPorId(transacao.categoriaId());
             Transacao transacaoNova = Transacao.builder()
-                    .descricao(transacao.getDescricao())
-                    .valor(transacao.getValor())
-                    .data(transacao.getData())
-                    .tipo(transacao.getTipo())
+                    .descricao(transacao.descricao())
+                    .valor(transacao.valor())
+                    .data(transacao.data())
+                    .tipo(transacao.tipo())
                     .categoria(categoria)
                     .usuario(usuario)
                     .build();
@@ -126,15 +126,15 @@ public class TransacaoService {
                 throw new EntityNotFoundException("transacao.not-found");
             }
 
-            Categoria categoria = categoriaService.buscarPorId (transacao.getCategoriaId());
+            Categoria categoria = categoriaService.buscarPorId (transacao.categoriaId());
             if(categoria == null){
                 throw new EntityNotFoundException("categoria.not-found");
             }
 
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setDescricao,transacao.getDescricao(),transacaoExistente.getDescricao());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setValor,transacao.getValor(),transacaoExistente.getValor());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setData,transacao.getData(),transacaoExistente.getData());
-            EntityUtils.atualizarSeDiferente(transacaoExistente::setTipo,transacao.getTipo(),transacaoExistente.getTipo());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setDescricao,transacao.descricao(),transacaoExistente.getDescricao());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setValor,transacao.valor(),transacaoExistente.getValor());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setData,transacao.data(),transacaoExistente.getData());
+            EntityUtils.atualizarSeDiferente(transacaoExistente::setTipo,transacao.tipo(),transacaoExistente.getTipo());
             EntityUtils.atualizarSeDiferente(transacaoExistente::setCategoria,categoria,transacaoExistente.getCategoria());
             EntityUtils.atualizarSeDiferente(transacaoExistente::setUsuario,usuario,transacaoExistente.getUsuario());
 

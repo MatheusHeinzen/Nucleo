@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2958ad89-b1bd-4451-b137-af0a86ad0727" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/config/DataLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/config/DataLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/dto/TransacaoRequestDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/dto/TransacaoRequestDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/dto/TransacaoResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/dto/TransacaoResponseDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/model/Transacao.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/model/Transacao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/repository/ContasBancariasRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/nucleo/repository/ContasBancariasRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/nucleo/model/Transacao.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/nucleo/model/Transacao.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +39,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "testes",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",

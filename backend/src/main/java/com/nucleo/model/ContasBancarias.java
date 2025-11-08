@@ -1,9 +1,11 @@
 package com.nucleo.model;
 
+import com.nucleo.model.TipoConta;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "contas_bancarias")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContasBancarias extends BaseEntity {
