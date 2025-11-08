@@ -25,4 +25,14 @@ public class Categoria extends BaseEntity {
         ENTRADA,
         SAIDA
     }
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isGlobal = false;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
 }

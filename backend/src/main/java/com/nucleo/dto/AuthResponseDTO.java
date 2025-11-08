@@ -15,5 +15,4 @@ import java.util.Set;
 public class AuthResponseDTO {
     private String token;
     private String email;
-    private Set<Usuario.Role> roles;
 }

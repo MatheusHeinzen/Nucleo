@@ -43,7 +43,6 @@ public class AuthService {
             return AuthResponseDTO.builder()
                     .token("Bearer " + jwtToken)
                     .email(usuario.getEmail())
-                    .roles(usuario.getRoles())
                     .build();
 
         } catch (AuthenticationException e) {
@@ -72,7 +71,6 @@ public class AuthService {
             return AuthResponseDTO.builder()
                     .token("Bearer " + jwtToken)
                     .email(usuarioSalvo.getEmail())
-                    .roles(usuarioSalvo.getRoles())
                     .build();
 
         } catch (Exception e) {

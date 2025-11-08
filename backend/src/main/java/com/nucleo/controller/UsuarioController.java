@@ -1,5 +1,7 @@
 package com.nucleo.controller;
 
+import com.nucleo.dto.UsuarioRequestDTO;
+import com.nucleo.dto.UsuarioResponseDTO;
 import com.nucleo.model.Usuario;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
@@ -24,19 +26,20 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @GetMapping("/all")
-    @Operation(summary = "Listar todos os usuários")
+    @Operation(summary = "Listar todos os usuários para adms")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
-        List<Usuario> usuarios = usuarioService.encontraTodos();
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodosUsuarios() {
+        List<UsuarioResponseDTO> usuarios = usuarioService.encontraTodosDTO();
         return ResponseEntity.ok(usuarios);
+
     }
 
     @GetMapping("/me")
     @Operation(summary = "Buscar usuario logado")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Usuario> buscarUsuarioPorEmail() {
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorEmail() {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(usuarioId);
         if(usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -47,16 +50,27 @@ public class UsuarioController {
     @GetMapping("/{id}")
     @Operation(summary = "Buscar usuário por ID")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
-        Usuario usuario = usuarioService.buscarPorId(id);
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
+        UsuarioResponseDTO usuario = usuarioService.buscarPorId(id);
         return ResponseEntity.ok(usuario);
     }
 
-    @PutMapping("/me")
-    @Operation(summary = "Atualizar dados do usuário logado")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Usuario> atualizarUsuario(@Valid @RequestBody Usuario usuarioDetails) {
-        Usuario usuario = usuarioService.atualizaUsuario(usuarioDetails);
+    @PutMapping
+    @Operation(summary = "Atualizar dados do usuário logado ou passando o id se for adm")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario( @RequestBody UsuarioRequestDTO usuarioDetails, @RequestBody(required = false) Long id) {
+
+        if(id != null) {
+            if(SecurityUtils.isAdmin()){
+                UsuarioResponseDTO usuario =usuarioService.atualizaUsuario(usuarioDetails,id);
+                if (usuario == null) {
+                    return ResponseEntity.notFound().build();
+                }
+                return ResponseEntity.ok(usuario);
+            }
+        }
+
+        UsuarioResponseDTO usuario = usuarioService.atualizaUsuario(usuarioDetails);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
@@ -64,10 +78,17 @@ public class UsuarioController {
     }
 
 
-    @DeleteMapping
-    @Operation(summary = "Deletar um usuário")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<String> deletarUsuario() {
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar um usuário",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
+    @PreAuthorize("hasAnyRole('User','ADMIN')")
+    public ResponseEntity<String> deletarUsuario(@PathVariable(required = false) Long id) {
+        if(id!=null) {
+            if(SecurityUtils.isAdmin()){
+                usuarioService.deletaUsuario(id);
+                return ResponseEntity.ok().build();
+            }
+
+        }
         usuarioService.deletaUsuario();
         return ResponseEntity.ok().build();
 

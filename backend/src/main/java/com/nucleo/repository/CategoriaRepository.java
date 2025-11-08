@@ -14,4 +14,11 @@ public interface CategoriaRepository extends BaseRepository<Categoria, Long> {
 
     Optional<Categoria> findByNome(String nome);
 
+    List<Categoria> findByIsGlobalTrueOrUsuarioIdAndAtivoTrue(Long usuarioId);
+
+    List<Categoria> findByUsuarioIdAndAtivoTrue(Long usuarioId);
+
+    List<Categoria> findByIsGlobalTrueAndTipoAndAtivoTrue(Categoria.TipoCategoria tipo);
+
+    List<Categoria> findByIsGlobalTrueOrUsuarioIdAndTipoAndAtivoTrue(Long usuarioId, Categoria.TipoCategoria tipo);
 }

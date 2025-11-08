@@ -33,7 +33,7 @@ public class BeneficioService {
     public Beneficio criarParaUsuarioLogado(Beneficio beneficio) throws EntityNotCreatedException {
         try {
             Long usuarioId = SecurityUtils.getCurrentUserId();
-            Usuario usuario = usuarioService.buscarPorId(usuarioId);
+            Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
             beneficio.setUsuario(usuario);
             return beneficioRepository.save(beneficio);
         } catch (Exception e) {

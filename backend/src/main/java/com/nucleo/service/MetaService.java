@@ -6,6 +6,7 @@ import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Meta;
 import com.nucleo.model.StatusMeta;
 import com.nucleo.repository.MetaRepository;
+import com.nucleo.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +21,7 @@ import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
 public class MetaService {
 
     private final MetaRepository metaRepository;
+    private final SecurityUtils securityUtils;
 
 
     public Meta criar(Meta meta) throws EntityNotCreatedException {
@@ -51,22 +53,22 @@ public class MetaService {
     }
 
 
-    public Meta buscarPorId(Long id, Long usuarioId, boolean isAdmin) {
-        Meta meta = metaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Meta não encontrada."));
+    public Meta buscarPorId(Long id, Long usuarioId) {
+        Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
+
         
-        if (!isAdmin && !meta.getUsuarioId().equals(usuarioId)) {
+        if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
             throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
         }
         
         return meta;
     }
 
-    public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId, boolean isAdmin) {
+    public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {
 
         try {
 
-            Meta metaExistente = buscarPorId(id, usuarioId, isAdmin);
+            Meta metaExistente = buscarPorId(id, usuarioId);
 
             atualizarSeDiferente(metaExistente::setTitulo, metaAtualizada.getTitulo(), metaExistente.getTitulo());
             atualizarSeDiferente(metaExistente::setValorAlvo, metaAtualizada.getValorAlvo(), metaExistente.getValorAlvo());
@@ -81,10 +83,16 @@ public class MetaService {
 
     }
 
-    public void cancelar(Long id, Long usuarioId, boolean isAdmin) throws EntityNotDeletedException {
+    public void cancelar(Long id,Long userId) throws EntityNotDeletedException {
         try {
+            Long usuarioId = null;
+            if(SecurityUtils.isAdmin()) {
+                usuarioId = userId;
+            }else{
+                usuarioId = SecurityUtils.getCurrentUserId();
+            }
 
-            Meta meta = buscarPorId(id, usuarioId, isAdmin);
+            Meta meta = buscarPorId(id,usuarioId);
             meta.setStatus(StatusMeta.cancelada);
             metaRepository.save(meta);
         } catch (Exception e) {

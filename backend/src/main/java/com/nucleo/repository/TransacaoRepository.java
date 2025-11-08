@@ -39,4 +39,7 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
             @Param("inicio") LocalDate inicio,
             @Param("fim") LocalDate fim
     );
+
+    List<Transacao> findByUsuarioId(Long id);
+
 }

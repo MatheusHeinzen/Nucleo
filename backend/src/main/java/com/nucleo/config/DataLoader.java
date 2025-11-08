@@ -31,19 +31,10 @@ public class DataLoader implements CommandLineRunner {
         criarBeneficiosExemplo();
         criarTransacoesExemplo();
         criarMetasExemplo();
+        criarAdmin();
     }
 
     private void criarUsuarios() {
-        if (usuarioRepository.findByEmailAndAtivoTrue("admin@nucleo.com").isEmpty()) {
-            Usuario admin = Usuario.builder()
-                    .nome("Administrador")
-                    .email("admin@nucleo.com")
-                    .senha(passwordEncoder.encode("123"))
-                    .roles(Set.of(Usuario.Role.ROLE_ADMIN))
-                    .build();
-            usuarioRepository.save(admin);
-            System.out.println("[OK] Usuário ADMIN criado: admin@nucleo.com / 123");
-        }
 
         if (usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").isEmpty()) {
             Usuario joao = Usuario.builder()
@@ -63,54 +54,63 @@ public class DataLoader implements CommandLineRunner {
                     .nome("Alimentação")
                     .descricao("Gastos com alimentação e refeições")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Transporte")
                     .descricao("Gastos com transporte")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Moradia")
                     .descricao("Gastos com moradia, aluguel e contas")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Lazer")
                     .descricao("Gastos com entretenimento e lazer")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Saúde")
                     .descricao("Gastos com saúde e medicamentos")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Educação")
                     .descricao("Gastos com educação e cursos")
                     .tipo(Categoria.TipoCategoria.SAIDA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Salário")
                     .descricao("Receita de salário mensal")
                     .tipo(Categoria.TipoCategoria.ENTRADA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Investimentos")
                     .descricao("Receita de investimentos")
                     .tipo(Categoria.TipoCategoria.ENTRADA)
+                    .isGlobal(true)
                     .build());
 
             categoriaRepository.save(Categoria.builder()
                     .nome("Freelance")
                     .descricao("Receita de trabalhos freelance")
                     .tipo(Categoria.TipoCategoria.ENTRADA)
+                    .isGlobal(true)
                     .build());
 
             System.out.println("[OK] 9 Categorias padrão criadas!");
@@ -310,4 +310,25 @@ public class DataLoader implements CommandLineRunner {
             System.out.println("[OK] 3 Metas exemplo criadas para João!");
         }
     }
+
+    private void criarAdmin(){
+        String emailAdmin = "admin@nucleo.com";
+
+        if (usuarioRepository.findByEmailAndAtivoTrue(emailAdmin).isEmpty()) {
+            Usuario admin = Usuario.builder()
+                    .nome("Administrador")
+                    .email(emailAdmin)
+                    .senha(passwordEncoder.encode("admin123")) // senha criptografada
+                    .roles(Set.of(Usuario.Role.ROLE_ADMIN))
+                    .build();
+
+            usuarioRepository.save(admin);
+            System.out.println("✅ Usuário ADMIN criado: " + emailAdmin);
+        } else {
+            System.out.println("ℹ️ Usuário ADMIN já existe.");
+        }
+    }
+
+
+
 }

@@ -27,4 +27,5 @@ public interface BaseRepository<T extends BaseEntity, ID> extends JpaRepository<
     void softDelete(@Param("id") ID id);
 
     boolean existsByIdAndAtivoTrue(ID id);
+
 }

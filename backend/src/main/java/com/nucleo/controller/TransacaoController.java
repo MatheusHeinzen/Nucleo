@@ -34,9 +34,16 @@ public class TransacaoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TransacaoResponseDTO>> listarTodas() {
-        List<Transacao> transacoes = transacaoService.listarTodas();
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<List<TransacaoResponseDTO>> listarTodas(@RequestBody(required = false) Long id) {
+        List<Transacao> transacoes;
+        if(SecurityUtils.isAdmin()){
+            transacoes= transacaoService.listarTodas(id);
+
+        }else{
+            transacoes = transacaoService.listarTodas();
+        }
+
         List<TransacaoResponseDTO> response = transacoes.stream()
                 .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());
@@ -46,12 +53,10 @@ public class TransacaoController {
     @GetMapping("/{id}")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
-        boolean isAdmin = SecurityUtils.isAdmin();
-        Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId, isAdmin);
+        Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId);
         return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
     @PutMapping("/{id}")
-
     public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
 
         Transacao transacao = transacaoService.atualizar(id, request);
@@ -60,8 +65,8 @@ public class TransacaoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        boolean isAdmin = SecurityUtils.isAdmin();
-        transacaoService.excluir(id, isAdmin);
+
+        transacaoService.excluir(id);
         return ResponseEntity.noContent().build();
     }
 

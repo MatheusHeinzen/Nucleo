@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.nucleo.security.SecurityUtils.getCurrentUserId;
+
 @Service
 @RequiredArgsConstructor
 public class TransacaoService {
@@ -28,8 +30,8 @@ public class TransacaoService {
 
     public Transacao criar(TransacaoRequestDTO transacao) throws EntityNotCreatedException {
         try{
-            Long usuarioId = SecurityUtils.getCurrentUserId();
-            Usuario usuario = usuarioService.buscarPorId(usuarioId);
+            Long usuarioId = getCurrentUserId();
+            Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
             Categoria categoria = categoriaService.buscarPorId(transacao.getCategoriaId());
             Transacao transacaoNova = Transacao.builder()
                     .descricao(transacao.getDescricao())
@@ -49,8 +51,7 @@ public class TransacaoService {
 
     public List<Transacao> findByUsuarioId() throws EntityNotFoundException {
         try {
-            Long usuarioId = SecurityUtils.getCurrentUserId();
-            return transacaoRepository.findAllByUsuarioIdAndAtivoTrue(usuarioId);
+            return transacaoRepository.findAllByUsuarioIdAndAtivoTrue(getCurrentUserId());
         } catch (Exception e) {
             throw new EntityNotFoundException("transacao.not-found");
         }
@@ -58,7 +59,17 @@ public class TransacaoService {
 
     public List<Transacao> listarTodas() throws EntityNotFoundException {
         try {
-            return transacaoRepository.findAllByAtivoTrue();
+            return transacaoRepository.findByUsuarioId(getCurrentUserId());
+        } catch (Exception e) {
+            throw new EntityNotFoundException("transacao.not-found");
+        }
+    }
+
+
+    public List<Transacao> listarTodas(Long id) throws EntityNotFoundException {
+
+        try {
+            return transacaoRepository.findByUsuarioId(id);
         } catch (Exception e) {
             throw new EntityNotFoundException("transacao.not-found");
         }
@@ -91,11 +102,11 @@ public class TransacaoService {
             return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
     }
 
-    public Transacao buscarPorIdEUsuario(Long id, Long usuarioId, boolean isAdmin) throws EntityNotFoundException {
+    public Transacao buscarPorIdEUsuario(Long id, Long usuarioId) throws EntityNotFoundException {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
         
-        if (!isAdmin && !transacao.getUsuario().getId().equals(usuarioId)) {
+        if (!SecurityUtils.isAdmin() && !transacao.getUsuario().getId().equals(usuarioId)) {
             throw new EntityNotFoundException("Transação não encontrada ou não pertence a este usuário.");
         }
         
@@ -104,13 +115,13 @@ public class TransacaoService {
 
     public Transacao atualizar(Long id, TransacaoRequestDTO transacao) throws EntityNotUpdatedException {
         try {
-            Long usuarioId = SecurityUtils.getCurrentUserId();
-            Usuario usuario = usuarioService.buscarPorId(usuarioId);
+            Long usuarioId = getCurrentUserId();
+            Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
             if(usuario == null){
                 throw new EntityNotFoundException("usuario.not-found");
             }
 
-            var transacaoExistente = buscarPorIdEUsuario(id, usuario.getId(), false);
+            Transacao transacaoExistente = buscarPorIdEUsuario(id, usuario.getId());
             if(transacaoExistente == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
@@ -134,10 +145,10 @@ public class TransacaoService {
         }
     }
 
-    public void excluir(Long id, boolean isAdmin) throws EntityNotFoundException, EntityNotDeletedException {
+    public void excluir(Long id) throws EntityNotFoundException, EntityNotDeletedException {
         try {
-            Long usuarioId = SecurityUtils.getCurrentUserId();
-            Transacao t = buscarPorIdEUsuario(id, usuarioId, isAdmin);
+            Long usuarioId = getCurrentUserId();
+            Transacao t = buscarPorIdEUsuario(id, usuarioId);
             if(t == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
@@ -149,14 +160,14 @@ public class TransacaoService {
     }
 
     public List<Transacao> buscarPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
+        Long usuarioId = getCurrentUserId();
         return transacaoRepository.findByUsuarioAndPeriodo(usuarioId, dataInicio, dataFim);
     }
 
 
     public List<Transacao> encontraPorTipo(Transacao.TipoTransacao tipo) throws EntityNotFoundException {
         try {
-            Long usuarioId = SecurityUtils.getCurrentUserId();
+            Long usuarioId = getCurrentUserId();
             return transacaoRepository.findAllByUsuarioIdAndTipoAndAtivoTrue(usuarioId, tipo);
         } catch (Exception e) {
             throw new EntityNotFoundException("transacao.not-found");
@@ -169,7 +180,7 @@ public class TransacaoService {
             if(cat == null){
                 throw new EntityNotFoundException("categoria.not-found");
             }
-            return transacaoRepository.findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(SecurityUtils.getCurrentUserId(),cat.getId());
+            return transacaoRepository.findAllByUsuarioIdAndCategoriaIdAndAtivoTrue(getCurrentUserId(),cat.getId());
         }catch(Exception e){
             throw new EntityNotFoundException("transacao.not-found");
         }

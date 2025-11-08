@@ -18,7 +18,7 @@ public class ContasBancariasService {
     private final UsuarioService usuarioService;
 
     public ContasBancarias criar(ContasBancarias conta, Long usuarioId) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+        Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
         conta.setUsuario(usuario);
         conta.setAtivo(true);
         return contasRepository.save(conta);

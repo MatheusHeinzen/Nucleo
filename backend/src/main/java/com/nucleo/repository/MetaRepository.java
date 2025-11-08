@@ -11,4 +11,5 @@ public interface MetaRepository extends JpaRepository<Meta, Long> {
 
 
     List<Meta> findByUsuarioId(Long usuarioId);
+    Meta findByUsuarioIdAndId(Long usuarioId,Long Id);
 }

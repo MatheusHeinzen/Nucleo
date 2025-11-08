@@ -1,5 +1,7 @@
 package com.nucleo.controller;
 
+import com.nucleo.dto.CategoriaRequestDTO;
+import com.nucleo.dto.CategoriaResponseDTO;
 import com.nucleo.model.Categoria;
 import com.nucleo.service.CategoriaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,49 +12,54 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/categorias")
-@Tag(name = "Categorias", description = "Gerenciamento de Categorias Globais")
+@Tag(name = "Categorias", description = "Gerenciamento de Categorias Globais e Pessoais")
 @RequiredArgsConstructor
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
 
-
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Categoria> criar(@RequestBody Categoria categoria) {
-        Categoria novaCategoria = categoriaService.criar(categoria);
-        return new ResponseEntity<>(novaCategoria, HttpStatus.CREATED);
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<CategoriaResponseDTO> criar(@RequestBody CategoriaRequestDTO dto) {
+        Categoria novaCategoria = categoriaService.criar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(CategoriaResponseDTO.fromEntity(novaCategoria));
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<List<Categoria>> listar() {
-        List<Categoria> categorias = categoriaService.listarTodas();
+    public ResponseEntity<List<CategoriaResponseDTO>> listar() {
+        List<CategoriaResponseDTO> categorias = categoriaService.listarPorUsuario().stream()
+                .map(CategoriaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(categorias);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Categoria> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<CategoriaResponseDTO> buscarPorId(@PathVariable Long id) {
         Categoria categoria = categoriaService.buscarPorId(id);
-        return ResponseEntity.ok(categoria);
+        return ResponseEntity.ok(CategoriaResponseDTO.fromEntity(categoria));
     }
 
     @GetMapping("/tipo/{tipo}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<List<Categoria>> buscarPorTipo(@PathVariable Categoria.TipoCategoria tipo) {
-        List<Categoria> categorias = categoriaService.buscarPorTipo(tipo);
+    public ResponseEntity<List<CategoriaResponseDTO>> buscarPorTipo(@PathVariable Categoria.TipoCategoria tipo) {
+        List<CategoriaResponseDTO> categorias = categoriaService.buscarPorTipo(tipo).stream()
+                .map(CategoriaResponseDTO::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(categorias);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Categoria> atualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
-        Categoria categoriaAtualizada = categoriaService.atualizar(id, categoria);
-        return ResponseEntity.ok(categoriaAtualizada);
+    public ResponseEntity<CategoriaResponseDTO> atualizar(@PathVariable Long id, @RequestBody CategoriaRequestDTO dto) {
+        Categoria categoriaAtualizada = categoriaService.atualizar(id, dto);
+        return ResponseEntity.ok(CategoriaResponseDTO.fromEntity(categoriaAtualizada));
     }
 
     @DeleteMapping("/{id}")
