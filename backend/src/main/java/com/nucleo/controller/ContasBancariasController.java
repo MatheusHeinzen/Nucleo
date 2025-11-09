@@ -23,8 +23,7 @@ public class ContasBancariasController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ContasBancarias> criar(@RequestBody ContasBancarias conta) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        ContasBancarias novaConta = contasService.criar(conta, usuarioId);
+        ContasBancarias novaConta = contasService.criar(conta);
         return new ResponseEntity<>(novaConta, HttpStatus.CREATED);
     }
 
@@ -32,14 +31,14 @@ public class ContasBancariasController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<ContasBancarias>> listarMinhas() {
         List<ContasBancarias> contas = contasService.listarPorUsuario(SecurityUtils.getCurrentUserId());
-        return ResponseEntity.ok(contas);
+        return ResponseEntity.ok().body(contas);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContasBancarias>> listarTodas() {
         List<ContasBancarias> contas = contasService.listarTodas();
-        return ResponseEntity.ok(contas);
+        return ResponseEntity.ok().body(contas);
     }
 
     @GetMapping("/{id}")
@@ -48,14 +47,14 @@ public class ContasBancariasController {
         Long usuarioId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
         ContasBancarias conta = contasService.buscarPorId(id, usuarioId, isAdmin);
-        return ResponseEntity.ok(conta);
+        return ResponseEntity.ok().body(conta);
     }
 
     @GetMapping("/usuario/{usuarioId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ContasBancarias>> listarPorUsuario(@PathVariable Long usuarioId) {
         List<ContasBancarias> contas = contasService.listarPorUsuario(usuarioId);
-        return ResponseEntity.ok(contas);
+        return ResponseEntity.ok().body(contas);
     }
 
     @PutMapping("/{id}")
@@ -64,15 +63,15 @@ public class ContasBancariasController {
         Long usuarioId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
         ContasBancarias contaAtualizada = contasService.atualizar(id, conta, usuarioId, isAdmin);
-        return ResponseEntity.ok(contaAtualizada);
+        return ResponseEntity.ok().body(contaAtualizada);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
         contasService.deletar(id, usuarioId, isAdmin);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

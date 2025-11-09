@@ -65,8 +65,9 @@ class AuthServiceTest {
     void deveAutenticarComSucesso() {
         AuthRequestDTO request = new AuthRequestDTO("isa@nucleo.com", "senha123");
 
-        BDDMockito.doNothing().when(authenticationManager)
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
+        BDDMockito.given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .willReturn(new UsernamePasswordAuthenticationToken("isa@nucleo.com", "senha123"));
+
 
         BDDMockito.given(usuarioRepository.findByEmailAndAtivoTrue("isa@nucleo.com"))
                 .willReturn(Optional.of(usuarioExistente));

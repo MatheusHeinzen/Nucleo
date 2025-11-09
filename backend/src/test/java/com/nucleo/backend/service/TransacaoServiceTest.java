@@ -13,10 +13,13 @@ import com.nucleo.service.CategoriaService;
 import com.nucleo.service.TransacaoService;
 import com.nucleo.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,6 +35,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 class TransacaoServiceTest {
+
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @Autowired
     private TransacaoService transacaoService;
@@ -75,10 +81,17 @@ class TransacaoServiceTest {
                 .categoria(categoria)
                 .ativo(true)
                 .build();
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
 
-        BDDMockito.mockStatic(SecurityUtils.class);
-        BDDMockito.given(SecurityUtils.getCurrentUserId()).willReturn(1L);
-        BDDMockito.given(SecurityUtils.isAdmin()).willReturn(false);
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
     }
 
     // ---------------------------
@@ -161,7 +174,7 @@ class TransacaoServiceTest {
         BDDMockito.given(transacaoRepository.findById(1L))
                 .willReturn(Optional.of(transacao));
 
-        Transacao resultado = transacaoService.buscarPorIdEUsuario(1L, 1L);
+        Transacao resultado = transacaoService.buscarPorIdEUsuario(1L);
 
         assertThat(resultado.getDescricao()).isEqualTo("Supermercado");
     }
@@ -172,7 +185,7 @@ class TransacaoServiceTest {
         BDDMockito.given(transacaoRepository.findById(99L)).willReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class,
-                () -> transacaoService.buscarPorIdEUsuario(99L, 1L));
+                () -> transacaoService.buscarPorIdEUsuario(99L));
     }
 
     // ---------------------------

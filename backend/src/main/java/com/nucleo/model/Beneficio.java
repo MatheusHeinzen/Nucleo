@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-
 public class Beneficio extends BaseEntity {
 
 

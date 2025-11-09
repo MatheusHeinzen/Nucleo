@@ -4,10 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.dto.TransacaoRequestDTO;
 import com.nucleo.model.Categoria;
 import com.nucleo.model.Transacao;
+import com.nucleo.model.Usuario;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.TransacaoService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class TransacaoControllerTest {
 
+    private MockedStatic<SecurityUtils> securityUtilsMock;
+
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -35,6 +44,21 @@ class TransacaoControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setup() {
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
+    }
 
     @Test
     @DisplayName("Deve criar uma nova transação")
@@ -82,6 +106,8 @@ class TransacaoControllerTest {
                 .valor(new BigDecimal("5000.00"))
                 .data(LocalDate.now().minusDays(3))
                 .tipo(Transacao.TipoTransacao.ENTRADA)
+                .categoria(Categoria.builder().id(1L).nome("Alimentacao").build())
+                .usuario(Usuario.builder().id(1L).build())
                 .build();
 
         Transacao t2 = Transacao.builder()
@@ -90,6 +116,8 @@ class TransacaoControllerTest {
                 .valor(new BigDecimal("1200.00"))
                 .data(LocalDate.now().minusDays(1))
                 .tipo(Transacao.TipoTransacao.SAIDA)
+                .categoria(Categoria.builder().id(1L).nome("Alimentacao").build())
+                .usuario(Usuario.builder().id(1L).build())
                 .build();
 
         BDDMockito.given(transacaoService.listarTodas()).willReturn(List.of(t1, t2));
@@ -110,9 +138,10 @@ class TransacaoControllerTest {
                 .valor(new BigDecimal("80.00"))
                 .data(LocalDate.now().minusDays(1))
                 .tipo(Transacao.TipoTransacao.SAIDA)
+                .usuario(Usuario.builder().id(1L).build())
                 .build();
 
-        BDDMockito.given(transacaoService.buscarPorIdEUsuario(4L, 1L)).willReturn(transacao);
+        BDDMockito.given(transacaoService.buscarPorIdEUsuario(4L)).willReturn(transacao);
 
         mockMvc.perform(get("/api/transacoes/4"))
                 .andExpect(status().isOk())
@@ -174,6 +203,7 @@ class TransacaoControllerTest {
                 .valor(new BigDecimal("2500.00"))
                 .tipo(Transacao.TipoTransacao.ENTRADA)
                 .data(LocalDate.now())
+                .usuario(Usuario.builder().id(1L).build())
                 .build();
 
         BDDMockito.given(transacaoService.encontraPorTipo(Transacao.TipoTransacao.ENTRADA)).willReturn(List.of(t));

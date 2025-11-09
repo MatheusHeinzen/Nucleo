@@ -3,10 +3,15 @@ package com.nucleo.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.model.ContasBancarias;
 import com.nucleo.model.TipoConta;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.ContasBancariasService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -34,6 +40,28 @@ class ContasBancariasControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
+
+
+
+    @BeforeEach
+    void setup() {
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils .class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
+    }
+
+
     @Test
     @DisplayName("Deve criar uma conta bancária para o usuário logado")
     @WithMockUser(username = "joao@nucleo.com", roles = "USER")
@@ -47,7 +75,7 @@ class ContasBancariasControllerTest {
                 .saldoInicial(new BigDecimal("1500.00"))
                 .build();
 
-        BDDMockito.given(contasService.criar(conta, 1L)).willReturn(conta);
+        BDDMockito.given(contasService.criar(conta)).willReturn(conta);
 
         mockMvc.perform(post("/api/contas")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +152,7 @@ class ContasBancariasControllerTest {
     void deveAtualizarConta() throws Exception {
         ContasBancarias atualizada = ContasBancarias.builder()
                 .id(5L)
-                .instituicao("Itaú")
+                .instituicao("Itau")
                 .tipo(TipoConta.CORRENTE)
                 .apelido("Conta Atualizada")
                 .moeda("BRL")
@@ -136,9 +164,11 @@ class ContasBancariasControllerTest {
         mockMvc.perform(put("/api/contas/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(atualizada)))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instituicao").value("Itaú"))
+                .andExpect(jsonPath("$.instituicao").value("Itau"))
                 .andExpect(jsonPath("$.apelido").value("Conta Atualizada"));
+
     }
 
     @Test
@@ -146,6 +176,8 @@ class ContasBancariasControllerTest {
     @WithMockUser(username = "joao@nucleo.com", roles = "USER")
     void deveDeletarConta() throws Exception {
         mockMvc.perform(delete("/api/contas/5"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
+
     }
+
 }

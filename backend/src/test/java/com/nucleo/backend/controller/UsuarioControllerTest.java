@@ -4,10 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.dto.UsuarioRequestDTO;
 import com.nucleo.dto.UsuarioResponseDTO;
 import com.nucleo.model.Usuario;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UsuarioControllerTest {
 
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -34,6 +40,27 @@ class UsuarioControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
+
+
+
+    @BeforeEach
+    void setup() {
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils .class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
+    }
+
+
 
     @Test
     @DisplayName("Deve listar todos os usuários (ADMIN)")
@@ -92,7 +119,10 @@ class UsuarioControllerTest {
     @DisplayName("Deve deletar o usuário logado (USER)")
     @WithMockUser(username = "joao@nucleo.com", roles = "USER")
     void deveDeletarUsuarioLogado() throws Exception {
-        mockMvc.perform(delete("/api/usuarios/1"))
+
+        BDDMockito.willDoNothing().given(usuarioService).deletaUsuario(1L);
+
+        mockMvc.perform(delete("/api/usuarios"))
                 .andExpect(status().isOk());
     }
 }

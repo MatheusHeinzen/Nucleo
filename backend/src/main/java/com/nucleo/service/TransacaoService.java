@@ -1,6 +1,7 @@
 package com.nucleo.service;
 
 import com.nucleo.dto.TransacaoRequestDTO;
+import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
@@ -102,11 +103,11 @@ public class TransacaoService {
             return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
     }
 
-    public Transacao buscarPorIdEUsuario(Long id, Long usuarioId) throws EntityNotFoundException {
+    public Transacao buscarPorIdEUsuario(Long id) throws EntityNotFoundException {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
         
-        if (!SecurityUtils.isAdmin() && !transacao.getUsuario().getId().equals(usuarioId)) {
+        if (!SecurityUtils.isAdmin() && !transacao.getUsuario().getId().equals(getCurrentUserId())) {
             throw new EntityNotFoundException("Transação não encontrada ou não pertence a este usuário.");
         }
         
@@ -121,7 +122,7 @@ public class TransacaoService {
                 throw new EntityNotFoundException("usuario.not-found");
             }
 
-            Transacao transacaoExistente = buscarPorIdEUsuario(id, usuario.getId());
+            Transacao transacaoExistente = buscarPorIdEUsuario(id);
             if(transacaoExistente == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
@@ -147,10 +148,13 @@ public class TransacaoService {
 
     public void excluir(Long id) throws EntityNotFoundException, EntityNotDeletedException {
         try {
-            Long usuarioId = getCurrentUserId();
-            Transacao t = buscarPorIdEUsuario(id, usuarioId);
+            Transacao t = buscarPorIdEUsuario(id);
+
             if(t == null) {
                 throw new EntityNotFoundException("transacao.not-found");
+            }
+            if(!t.getUsuario().getId().equals(getCurrentUserId()) && !SecurityUtils.isAdmin()) {
+                throw new AuthenticationException("transacao.not-deleted");
             }
             transacaoRepository.deleteById(t.getId());
         }catch(Exception e){

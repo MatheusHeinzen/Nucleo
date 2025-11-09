@@ -3,6 +3,7 @@ package com.nucleo.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.dto.AuthRequestDTO;
 import com.nucleo.dto.AuthResponseDTO;
+import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +57,7 @@ class AuthControllerTest {
         AuthRequestDTO request = new AuthRequestDTO("invalido@nucleo.com", "senhaErrada");
 
         Mockito.when(authService.autenticar(any(AuthRequestDTO.class)))
-                .thenThrow(new RuntimeException("login.login-failed"));
+                .thenThrow(new AuthenticationException("login.login-failed"));
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

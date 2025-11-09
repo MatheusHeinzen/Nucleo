@@ -30,7 +30,7 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodosUsuarios() {
         List<UsuarioResponseDTO> usuarios = usuarioService.encontraTodosDTO();
-        return ResponseEntity.ok(usuarios);
+        return ResponseEntity.ok().body(usuarios);
 
     }
 
@@ -43,7 +43,7 @@ public class UsuarioController {
         if(usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok().body(usuario)  ;
 
     }
 
@@ -52,13 +52,13 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
         UsuarioResponseDTO usuario = usuarioService.buscarPorId(id);
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok().body(usuario);
     }
 
-    @PutMapping
+    @PutMapping({"","/{id}"})
     @Operation(summary = "Atualizar dados do usuário logado ou passando o id se for adm")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario( @RequestBody UsuarioRequestDTO usuarioDetails, @RequestBody(required = false) Long id) {
+    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario( @RequestBody UsuarioRequestDTO usuarioDetails, @PathVariable(required = false) Long id) {
 
         if(id != null) {
             if(SecurityUtils.isAdmin()){
@@ -74,14 +74,14 @@ public class UsuarioController {
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok().body(usuario);
     }
 
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Deletar um usuário",requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(required = false))
-    @PreAuthorize("hasAnyRole('User','ADMIN')")
-    public ResponseEntity<String> deletarUsuario(@PathVariable(required = false) Long id) {
+    @DeleteMapping({ "", "/{id}" })
+    @Operation(summary = "Deletar um usuário")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<String> deletarUsuario(@PathVariable(value = "id", required = false) Long id) {
         if(id!=null) {
             if(SecurityUtils.isAdmin()){
                 usuarioService.deletaUsuario(id);

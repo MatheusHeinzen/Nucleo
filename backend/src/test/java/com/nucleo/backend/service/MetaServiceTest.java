@@ -10,10 +10,13 @@ import com.nucleo.repository.MetaRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +31,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 class MetaServiceTest {
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
+
 
     @Autowired
     private MetaService metaService;
@@ -52,9 +58,17 @@ class MetaServiceTest {
                 .status(StatusMeta.ativa)
                 .build();
 
-        BDDMockito.mockStatic(SecurityUtils.class);
-        BDDMockito.given(SecurityUtils.getCurrentUserId()).willReturn(1L);
-        BDDMockito.given(SecurityUtils.isAdmin()).willReturn(false);
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
     }
 
     // ---------------------------

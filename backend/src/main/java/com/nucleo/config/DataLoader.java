@@ -4,11 +4,13 @@ import com.nucleo.model.*;
 import com.nucleo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -119,8 +121,12 @@ public class DataLoader implements CommandLineRunner {
 
     private void criarContasBancariasExemplo() {
         if (contasBancariasRepository.count() == 0) {
-            var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
-
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com");
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("[AVISO] Usuário João não encontrado, ignorando contas exemplo.");
+                return;
+            }
+            Usuario joao = usuarioOpt.get();
             contasBancariasRepository.save(ContasBancarias.builder()
                     .instituicao("Nubank")
                     .tipo(TipoConta.CORRENTE)
@@ -163,14 +169,18 @@ public class DataLoader implements CommandLineRunner {
 
     private void criarBeneficiosExemplo() {
         if (beneficioRepository.count() == 0) {
-            var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
-
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com");
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("[AVISO] Usuário João não encontrado, ignorando contas exemplo.");
+                return;
+            }
+            Usuario usuario = usuarioOpt.get();
             beneficioRepository.save(Beneficio.builder()
                     .nome("Vale Refeição")
                     .descricao("Benefício mensal de VR")
                     .tipo(Beneficio.TipoBeneficio.VR)
                     .valor(new BigDecimal("500.00"))
-                    .usuario(joao)
+                    .usuario(usuario)
                     .build());
 
             beneficioRepository.save(Beneficio.builder()
@@ -178,7 +188,7 @@ public class DataLoader implements CommandLineRunner {
                     .descricao("Benefício mensal de VT")
                     .tipo(Beneficio.TipoBeneficio.VT)
                     .valor(new BigDecimal("200.00"))
-                    .usuario(joao)
+                    .usuario(usuario)
                     .build());
 
             beneficioRepository.save(Beneficio.builder()
@@ -186,7 +196,7 @@ public class DataLoader implements CommandLineRunner {
                     .descricao("Plano de saúde empresarial")
                     .tipo(Beneficio.TipoBeneficio.PLANO_SAUDE)
                     .valor(new BigDecimal("350.00"))
-                    .usuario(joao)
+                    .usuario(usuario)
                     .build());
 
             System.out.println("[OK] 3 Benefícios exemplo criados para João!");
@@ -195,7 +205,12 @@ public class DataLoader implements CommandLineRunner {
 
     private void criarTransacoesExemplo() {
         if (transacaoRepository.count() == 0) {
-            var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com");
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("[AVISO] Usuário João não encontrado, ignorando contas exemplo.");
+                return;
+            }
+            Usuario joao = usuarioOpt.get();
             var contaPrincipal = contasBancariasRepository.findByApelidoAndUsuarioId("Conta Principal", joao.getId())
                     .orElseGet(() -> contasBancariasRepository.save(
                             ContasBancarias.builder()
@@ -290,7 +305,12 @@ public class DataLoader implements CommandLineRunner {
 
     private void criarMetasExemplo() {
         if (metaRepository.count() == 0) {
-            var joao = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com").orElseThrow();
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmailAndAtivoTrue("joao@nucleo.com");
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("[AVISO] Usuário João não encontrado, ignorando contas exemplo.");
+                return;
+            }
+            Usuario joao = usuarioOpt.get();
             var categoriaLazer = categoriaRepository.findByNome("Lazer");
             var categoriaMoradia = categoriaRepository.findByNome("Moradia");
 

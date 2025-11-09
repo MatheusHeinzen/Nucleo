@@ -33,7 +33,7 @@ public class TransacaoController {
         return ResponseEntity.ok().body(transacao);
     }
 
-    @GetMapping
+    @GetMapping({"/id",""})
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TransacaoResponseDTO>> listarTodas(@RequestBody(required = false) Long id) {
         List<Transacao> transacoes;
@@ -52,8 +52,8 @@ public class TransacaoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        Transacao transacao = transacaoService.buscarPorIdEUsuario(id, usuarioId);
+
+        Transacao transacao = transacaoService.buscarPorIdEUsuario(id);
         return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
     }
     @PutMapping("/{id}")

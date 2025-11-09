@@ -66,14 +66,11 @@ public class UsuarioService  {
 
 
     public void deletaUsuario() throws EntityNotDeletedException {
-        Long usuarioId = getCurrentUserId();
+
         try{
-            Optional<Usuario> usuario = usuarioRepository.findByIdAndAtivoTrue(usuarioId);
-            if (usuario.isPresent()) {
-                usuarioRepository.softDelete(usuarioId);
-            }
+            usuarioRepository.softDelete(getCurrentUserId());
         }catch(Exception e){
-            throw new EntityNotDeletedException("usuario.not-deleted");
+            throw new EntityNotDeletedException("usuario.not-found");
         }
     }
 
@@ -82,6 +79,8 @@ public class UsuarioService  {
             Optional<Usuario> usuario = usuarioRepository.findByIdAndAtivoTrue(usuarioId);
             if (usuario.isPresent()) {
                 usuarioRepository.softDelete(usuarioId);
+            }else{
+                throw new EntityNotFoundException("usuario.not-found");
             }
         }catch(Exception e){
             throw new EntityNotDeletedException("usuario.not-deleted");

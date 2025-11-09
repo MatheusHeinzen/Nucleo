@@ -29,13 +29,13 @@ public class TransacaoResponseDTO {
         response.setValor(transacao.getValor());
         response.setData(transacao.getData());
         response.setTipo(transacao.getTipo());
-        response.setCategoriaId(transacao.getCategoria().getId());
-        response.setCategoriaNome(transacao.getCategoria().getNome());
+        response.setCategoriaId(transacao.getCategoria() != null ? transacao.getCategoria().getId() : null);
+        response.setCategoriaNome(transacao.getCategoria() != null ? transacao.getCategoria().getNome() : null);
         response.setDataCriacao(transacao.getDataCriacao());
         response.setDataAtualizacao(transacao.getDataAtualizacao());
         response.setUsuarioId(transacao.getUsuario().getId());
         response.setUsuarioNome(transacao.getUsuario().getNome());
-        response.setContaId(transacao.getConta().getId());
+        response.setContaId(transacao.getConta() != null ? transacao.getConta().getId() : null);
         return response;
     }
 }

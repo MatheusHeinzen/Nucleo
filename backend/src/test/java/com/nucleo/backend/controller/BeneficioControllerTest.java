@@ -2,10 +2,15 @@ package com.nucleo.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.model.Beneficio;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.BeneficioService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +22,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -33,6 +41,25 @@ class BeneficioControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private MockedStatic<SecurityUtils> securityUtilsMock;
+
+
+
+    @BeforeEach
+    void setup() {
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils .class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
+    }
+
     @Test
     @DisplayName("Deve criar um novo benefício para o usuário logado")
     @WithMockUser(username = "joao@nucleo.com", roles = "USER")
@@ -45,7 +72,7 @@ class BeneficioControllerTest {
                 .valor(new BigDecimal("500.00"))
                 .build();
 
-        BDDMockito.given(beneficioService.criarParaUsuarioLogado(novo)).willReturn(novo);
+        BDDMockito.given(beneficioService.criarParaUsuarioLogado(any(Beneficio.class))).willReturn(novo);
 
         mockMvc.perform(post("/api/beneficios")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,7 +134,7 @@ class BeneficioControllerTest {
                 .valor(new BigDecimal("120.00"))
                 .build();
 
-        BDDMockito.given(beneficioService.buscarPorIdEUsuario(3L, 1L, false)).willReturn(beneficio);
+        BDDMockito.given(beneficioService.buscarPorIdEUsuario(3L)).willReturn(beneficio);
 
         mockMvc.perform(get("/api/beneficios/3"))
                 .andExpect(status().isOk())
@@ -127,11 +154,13 @@ class BeneficioControllerTest {
                 .valor(new BigDecimal("600.00"))
                 .build();
 
-        BDDMockito.given(beneficioService.atualizarMeu(1L, atualizado, 1L, false)).willReturn(atualizado);
+        BDDMockito.given(beneficioService.atualizarMeu(eq(1L), any(Beneficio.class)))
+                .willReturn(atualizado);
 
         mockMvc.perform(put("/api/beneficios/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(atualizado)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Vale Refeição Atualizado"))
                 .andExpect(jsonPath("$.valor").value(600.00));

@@ -10,10 +10,13 @@ import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.BeneficioService;
 import com.nucleo.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +31,8 @@ import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
 class BeneficioServiceTest {
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @Autowired
     private BeneficioService beneficioService;
@@ -61,9 +66,17 @@ class BeneficioServiceTest {
                 .ativo(true)
                 .build();
 
-        BDDMockito.mockStatic(SecurityUtils.class);
-        BDDMockito.given(SecurityUtils.getCurrentUserId()).willReturn(1L);
-        BDDMockito.given(SecurityUtils.isAdmin()).willReturn(false);
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
     }
 
     // ---------------------------
@@ -164,7 +177,7 @@ class BeneficioServiceTest {
         BDDMockito.given(beneficioRepository.save(any(Beneficio.class)))
                 .willReturn(atualizado);
 
-        Beneficio resultado = beneficioService.atualizarMeu(1L, atualizado, 1L, false);
+        Beneficio resultado = beneficioService.atualizarMeu(1L, atualizado);
 
         assertThat(resultado.getNome()).contains("Atualizado");
         assertThat(resultado.getValor()).isEqualByComparingTo("600.00");
@@ -182,7 +195,7 @@ class BeneficioServiceTest {
                 .willReturn(Optional.empty());
 
         assertThrows(EntityNotUpdatedException.class,
-                () -> beneficioService.atualizarMeu(99L, atualizado, 1L, false));
+                () -> beneficioService.atualizarMeu(99L, atualizado));
     }
 
     // ---------------------------
@@ -197,7 +210,7 @@ class BeneficioServiceTest {
 
         BDDMockito.doNothing().when(beneficioRepository).softDelete(1L);
 
-        beneficioService.deletarMeu(1L, 1L, false);
+        beneficioService.deletarMeu(1L);
 
         BDDMockito.then(beneficioRepository).should().softDelete(1L);
     }
@@ -209,6 +222,6 @@ class BeneficioServiceTest {
                 .given(beneficioRepository).softDelete(1L);
 
         assertThrows(EntityNotDeletedException.class,
-                () -> beneficioService.deletarMeu(1L, 1L, false));
+                () -> beneficioService.deletarMeu(1L));
     }
 }

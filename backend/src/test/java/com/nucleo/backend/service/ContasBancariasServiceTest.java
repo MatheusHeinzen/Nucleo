@@ -4,13 +4,17 @@ import com.nucleo.model.ContasBancarias;
 import com.nucleo.model.TipoConta;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.ContasBancariasRepository;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.ContasBancariasService;
 import com.nucleo.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,6 +30,8 @@ import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
 class ContasBancariasServiceTest {
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @Autowired
     private ContasBancariasService contasService;
@@ -59,8 +65,20 @@ class ContasBancariasServiceTest {
                 .usuario(usuario)
                 .ativo(true)
                 .build();
+
+
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
     }
 
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
+    }
     // ---------------------------
     // 🔹 CRIAÇÃO
     // ---------------------------
@@ -71,7 +89,7 @@ class ContasBancariasServiceTest {
         BDDMockito.given(usuarioService.buscarEntidadePorId(1L)).willReturn(usuario);
         BDDMockito.given(contasRepository.save(any(ContasBancarias.class))).willReturn(conta);
 
-        ContasBancarias resultado = contasService.criar(conta, 1L);
+        ContasBancarias resultado = contasService.criar(conta);
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getInstituicao()).isEqualTo("Nubank");

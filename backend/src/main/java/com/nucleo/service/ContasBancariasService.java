@@ -3,6 +3,7 @@ package com.nucleo.service;
 import com.nucleo.model.ContasBancarias;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.ContasBancariasRepository;
+import com.nucleo.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ public class ContasBancariasService {
     private final ContasBancariasRepository contasRepository;
     private final UsuarioService usuarioService;
 
-    public ContasBancarias criar(ContasBancarias conta, Long usuarioId) {
-        Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
+    public ContasBancarias criar(ContasBancarias conta) {
+        Usuario usuario = usuarioService.buscarEntidadePorId(SecurityUtils.getCurrentUserId());
         conta.setUsuario(usuario);
         conta.setAtivo(true);
         return contasRepository.save(conta);
@@ -66,5 +67,6 @@ public class ContasBancariasService {
         conta.setAtivo(false);
         conta.setDeletadoEm(LocalDateTime.now());
         contasRepository.save(conta);
+
     }
 }

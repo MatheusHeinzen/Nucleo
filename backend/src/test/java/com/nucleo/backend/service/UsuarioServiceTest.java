@@ -6,11 +6,15 @@ import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
+import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +32,8 @@ import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 class UsuarioServiceTest {
+
+    private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @Autowired
     private UsuarioService usuarioService;
@@ -50,6 +56,19 @@ class UsuarioServiceTest {
                 .ativo(true)
                 .roles(Set.of(Usuario.Role.ROLE_USER))
                 .build();
+
+
+        securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
+        securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn(1L);
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(false);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // fecha o mock estático para evitar conflitos
+        if (securityUtilsMock != null) {
+            securityUtilsMock.close();
+        }
     }
 
     @Test
@@ -86,7 +105,7 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Deve atualizar informações do usuário logado")
     void deveAtualizarUsuario() {
-        UsuarioRequestDTO request = new UsuarioRequestDTO("Isa Atualizada", "isa.atualizada@nucleo.com", null, true);
+        UsuarioRequestDTO request = new UsuarioRequestDTO("Isabel Pontes", "isa.atualizada@nucleo.com", null, true);
 
         BDDMockito.given(usuarioRepository.findByIdAndAtivoTrue(any(Long.class)))
                 .willReturn(Optional.of(usuarioAtivo));

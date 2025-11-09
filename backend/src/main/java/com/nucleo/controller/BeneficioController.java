@@ -31,30 +31,29 @@ public class BeneficioController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<Beneficio>> listarMeusBeneficios() {
         List<Beneficio> beneficios = beneficioService.buscarPorUsuarioLogado();
-        return ResponseEntity.ok(beneficios);
+        return ResponseEntity.ok().body(beneficios);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Beneficio>> listar() {
         List<Beneficio> beneficios = beneficioService.listarTodos();
-        return ResponseEntity.ok(beneficios);
+        return ResponseEntity.ok().body(beneficios);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> buscarPorId(@PathVariable Long id) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        boolean isAdmin = SecurityUtils.isAdmin();
-        Beneficio beneficio = beneficioService.buscarPorIdEUsuario(id, usuarioId, isAdmin);
-        return ResponseEntity.ok(beneficio);
+
+        Beneficio beneficio = beneficioService.buscarPorIdEUsuario(id);
+        return ResponseEntity.ok().body(beneficio);
     }
 
     @GetMapping("/usuario/{usuarioId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Beneficio>> buscarPorUsuario(@PathVariable Long usuarioId) {
         List<Beneficio> beneficios = beneficioService.buscarPorUsuario(usuarioId);
-        return ResponseEntity.ok(beneficios);
+        return ResponseEntity.ok().body(beneficios);
     }
 
     @GetMapping("/tipo/{tipo}")
@@ -62,24 +61,20 @@ public class BeneficioController {
     public ResponseEntity<List<Beneficio>> buscarMeusPorTipo(@PathVariable Beneficio.TipoBeneficio tipo) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
         List<Beneficio> beneficios = beneficioService.buscarPorUsuarioETipo(usuarioId, tipo);
-        return ResponseEntity.ok(beneficios);
+        return ResponseEntity.ok().body(beneficios);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Beneficio> atualizar(@PathVariable Long id, @RequestBody Beneficio beneficio) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        boolean isAdmin = SecurityUtils.isAdmin();
-        Beneficio beneficioAtualizado = beneficioService.atualizarMeu(id, beneficio, usuarioId, isAdmin);
-        return ResponseEntity.ok(beneficioAtualizado);
+        Beneficio beneficioAtualizado = beneficioService.atualizarMeu(id, beneficio);
+        return ResponseEntity.ok().body(beneficioAtualizado);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        boolean isAdmin = SecurityUtils.isAdmin();
-        beneficioService.deletarMeu(id, usuarioId, isAdmin);
+        beneficioService.deletarMeu(id);
         return ResponseEntity.noContent().build();
     }
 }

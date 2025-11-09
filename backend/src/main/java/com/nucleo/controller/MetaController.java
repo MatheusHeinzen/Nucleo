@@ -51,7 +51,7 @@ public class MetaController {
         return ResponseEntity.ok(metas);
     }
 
-    @GetMapping("/{id}/userid")
+    @GetMapping({"/id","/{id}/{idUsuario}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Meta> buscarPorId(@PathVariable Long id,@PathVariable(required = false) Long idUsuario) {
 
@@ -66,7 +66,7 @@ public class MetaController {
         return ResponseEntity.ok(metas);
     }
 
-    @PutMapping("/{id}/{idUsuario}")
+    @PutMapping({"/id","/{id}/{idUsuario}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta,@PathVariable(required = false) Long idUsuario) {
         Long usuarioId = null;
@@ -82,7 +82,7 @@ public class MetaController {
         return ResponseEntity.ok(metaAtualizada);
     }
 
-    @DeleteMapping("/{id}/{UserId}")
+    @DeleteMapping({"/{id}", "/{id}/{UserId}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id,@PathVariable(required = false) Long UserId) {
         metaService.cancelar(id,UserId);
