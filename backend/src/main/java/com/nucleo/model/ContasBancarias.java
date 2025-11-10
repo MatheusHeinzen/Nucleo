@@ -44,4 +44,6 @@ public class ContasBancarias extends BaseEntity {
 
     @Column(name = "deletado_em")
     private LocalDateTime deletadoEm;
+
+
 }

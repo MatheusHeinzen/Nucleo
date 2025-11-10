@@ -53,21 +53,38 @@ public class AuthService {
     public AuthResponseDTO registrar(AuthRequestDTO request) throws EntityNotCreatedException {
         try {
 
+
+
+            System.out.println("entrando no registrar");
             if (usuarioRepository.findByEmailAndAtivoTrue(request.getEmail()).isPresent()) {
                 throw new EntityNotCreatedException("register.user_exists");
-            }
-
+            }else if(request.getSenha().length() < 6) {}
+            System.out.println("passou0");
             Usuario novoUsuario = new Usuario();
+
+            System.out.println("criou usuario");
             novoUsuario.setNome(request.getEmail().split("@")[0]);
+            System.out.println("criou novo usuario nome");
             novoUsuario.setEmail(request.getEmail());
+            System.out.println("criou novo usuario email");
+
             novoUsuario.setSenha(passwordEncoder.encode(request.getSenha()));
+            System.out.println("criou novo usuario sem=nha");
+
             novoUsuario.setRoles(Set.of(Usuario.Role.ROLE_USER));
+            System.out.println("criou novo usuario role");
+
             novoUsuario.setAtivo(true);
+            System.out.println("criou novo usuario ativo");
+
+            System.out.println("passou");
 
             Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
 
+            System.out.println("passou 2");
             var jwtToken = jwtTokenProvider.generateToken(UserDetailsImpl.build(usuarioSalvo));
 
+            System.out.println("passou 3");
             return AuthResponseDTO.builder()
                     .token("Bearer " + jwtToken)
                     .email(usuarioSalvo.getEmail())

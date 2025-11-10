@@ -22,7 +22,7 @@ public class ContasBancariasController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<ContasBancarias> criar(@RequestBody ContasBancarias conta) {
+    public ResponseEntity<ContasBancarias> criar(@RequestBody ContasBancarias conta) throws Exception {
         ContasBancarias novaConta = contasService.criar(conta);
         return new ResponseEntity<>(novaConta, HttpStatus.CREATED);
     }

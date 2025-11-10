@@ -2,6 +2,7 @@ package com.nucleo.controller;
 
 import com.nucleo.dto.TransacaoRequestDTO;
 import com.nucleo.dto.TransacaoResponseDTO;
+import com.nucleo.exception.AuthenticationException;
 import com.nucleo.model.Transacao;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.TransacaoService;
@@ -33,13 +34,14 @@ public class TransacaoController {
         return ResponseEntity.ok().body(transacao);
     }
 
-    @GetMapping({"/id",""})
+    @GetMapping({"/user/{id}","/user"})
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<TransacaoResponseDTO>> listarTodas(@RequestBody(required = false) Long id) {
+    public ResponseEntity<List<TransacaoResponseDTO>> listarTodas(@RequestParam(required = false) Long id) {
         List<Transacao> transacoes;
         if(SecurityUtils.isAdmin()){
             transacoes= transacaoService.listarTodas(id);
-
+        }else if (id != null){
+            throw new AuthenticationException("erros.authentication");
         }else{
             transacoes = transacaoService.listarTodas();
         }
@@ -72,7 +74,7 @@ public class TransacaoController {
 
     @GetMapping("/me")
     public ResponseEntity<List<TransacaoResponseDTO>> listarMinhas() {
-        List<Transacao> transacoes = transacaoService.findByUsuarioId();
+        List<Transacao> transacoes = transacaoService.listarTodas();
         List<TransacaoResponseDTO> response = transacoes.stream()
                 .map(TransacaoResponseDTO::fromEntity)
                 .collect(Collectors.toList());

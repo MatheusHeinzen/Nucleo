@@ -47,7 +47,7 @@ public class AlertaService extends BaseService<Alerta, Long, AlertaRepository> {
                 : null;
                 
             ContasBancarias conta = dto.getContaId() != null 
-                ? contasService.buscarPorId(dto.getContaId(), usuario.getId(), SecurityUtils.isAdmin()) 
+                ? contasService.buscarPorId(dto.getContaId())
                 : null;
 
             Alerta alerta = Alerta.builder()
@@ -83,7 +83,7 @@ public class AlertaService extends BaseService<Alerta, Long, AlertaRepository> {
             }
             
             if (dto.getContaId() != null) {
-                ContasBancarias conta = contasService.buscarPorId(dto.getContaId(), usuarioId, SecurityUtils.isAdmin());
+                ContasBancarias conta = contasService.buscarPorId(dto.getContaId());
                 existente.setConta(conta);
             }
 

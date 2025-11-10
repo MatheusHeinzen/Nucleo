@@ -2,6 +2,7 @@ package com.nucleo.config;
 
 import com.nucleo.model.*;
 import com.nucleo.repository.*;
+import com.nucleo.service.TransacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -24,6 +25,7 @@ public class DataLoader implements CommandLineRunner {
     private final MetaRepository metaRepository;
     private final ContasBancariasRepository contasBancariasRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TransacaoService transacaoService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -44,9 +46,10 @@ public class DataLoader implements CommandLineRunner {
                     .email("joao@nucleo.com")
                     .senha(passwordEncoder.encode("string"))
                     .roles(Set.of(Usuario.Role.ROLE_USER))
+                    .ativo(true)
                     .build();
             usuarioRepository.save(joao);
-            System.out.println("[OK] Usuário USER criado: joao@nucleo.com / 123");
+            System.out.println("[OK] Usuário USER criado: joao@nucleo.com / string");
         }
     }
 

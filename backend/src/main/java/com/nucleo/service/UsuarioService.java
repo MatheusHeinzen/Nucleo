@@ -7,7 +7,7 @@ import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.UsuarioRepository;
 import com.nucleo.utils.EntityUtils;
-import jakarta.persistence.EntityNotFoundException;
+import com.nucleo.exception.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -2,6 +2,7 @@ package com.nucleo.controller;
 
 import com.nucleo.dto.UsuarioRequestDTO;
 import com.nucleo.dto.UsuarioResponseDTO;
+import com.nucleo.exception.AuthenticationException;
 import com.nucleo.model.Usuario;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.UsuarioService;
@@ -86,6 +87,8 @@ public class UsuarioController {
             if(SecurityUtils.isAdmin()){
                 usuarioService.deletaUsuario(id);
                 return ResponseEntity.ok().build();
+            }else {
+                throw new AuthenticationException("usuario nao pode deletar outro usuario");
             }
 
         }
