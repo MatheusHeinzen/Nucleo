@@ -1,18 +1,23 @@
 package com.nucleo.dto;
 
 import com.nucleo.model.Alerta;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Data
 public class AlertaResponse {
 
     private Long id;
     private Long usuarioId;
+    private String usuarioNome;
     private String nomeRegra;
     private Alerta.TipoAlerta tipo;
     private Long categoriaId;
+    private String categoriaNome;
     private Long contaId;
+    private String contaApelido;
     private BigDecimal limiteValor;
     private Integer janelaDias;
     private Boolean ativo;
@@ -20,117 +25,23 @@ public class AlertaResponse {
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
 
-    public AlertaResponse() {
-    }
-
-    public AlertaResponse(Alerta alerta) {
-        this.id = alerta.getId();
-        this.usuarioId = alerta.getUsuarioId();
-        this.nomeRegra = alerta.getNomeRegra();
-        this.tipo = alerta.getTipo();
-        this.categoriaId = alerta.getCategoriaId();
-        this.contaId = alerta.getContaId();
-        this.limiteValor = alerta.getLimiteValor();
-        this.janelaDias = alerta.getJanelaDias();
-        this.ativo = alerta.getAtivo();
-        this.notificarEmail = alerta.getNotificarEmail();
-        this.dataCriacao = alerta.getDataCriacao();
-        this.dataAtualizacao = alerta.getDataAtualizacao();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public String getNomeRegra() {
-        return nomeRegra;
-    }
-
-    public Alerta.TipoAlerta getTipo() {
-        return tipo;
-    }
-
-    public Long getCategoriaId() {
-        return categoriaId;
-    }
-
-    public Long getContaId() {
-        return contaId;
-    }
-
-    public BigDecimal getLimiteValor() {
-        return limiteValor;
-    }
-
-    public Integer getJanelaDias() {
-        return janelaDias;
-    }
-
-    public Boolean getAtivo() {
-        return ativo;
-    }
-
-    public Boolean getNotificarEmail() {
-        return notificarEmail;
-    }
-
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
-    }
-
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
-    }
-
-    public void setNomeRegra(String nomeRegra) {
-        this.nomeRegra = nomeRegra;
-    }
-
-    public void setTipo(Alerta.TipoAlerta tipo) {
-        this.tipo = tipo;
-    }
-
-    public void setCategoriaId(Long categoriaId) {
-        this.categoriaId = categoriaId;
-    }
-
-    public void setContaId(Long contaId) {
-        this.contaId = contaId;
-    }
-
-    public void setLimiteValor(BigDecimal limiteValor) {
-        this.limiteValor = limiteValor;
-    }
-
-    public void setJanelaDias(Integer janelaDias) {
-        this.janelaDias = janelaDias;
-    }
-
-    public void setAtivo(Boolean ativo) {
-        this.ativo = ativo;
-    }
-
-    public void setNotificarEmail(Boolean notificarEmail) {
-        this.notificarEmail = notificarEmail;
-    }
-
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
+    public static AlertaResponse fromEntity(Alerta alerta) {
+        AlertaResponse response = new AlertaResponse();
+        response.setId(alerta.getId());
+        response.setUsuarioId(alerta.getUsuario() != null ? alerta.getUsuario().getId() : null);
+        response.setUsuarioNome(alerta.getUsuario() != null ? alerta.getUsuario().getNome() : null);
+        response.setNomeRegra(alerta.getNomeRegra());
+        response.setTipo(alerta.getTipo());
+        response.setCategoriaId(alerta.getCategoria() != null ? alerta.getCategoria().getId() : null);
+        response.setCategoriaNome(alerta.getCategoria() != null ? alerta.getCategoria().getNome() : null);
+        response.setContaId(alerta.getConta() != null ? alerta.getConta().getId() : null);
+        response.setContaApelido(alerta.getConta() != null ? alerta.getConta().getApelido() : null);
+        response.setLimiteValor(alerta.getLimiteValor());
+        response.setJanelaDias(alerta.getJanelaDias());
+        response.setAtivo(alerta.getAtivo());
+        response.setNotificarEmail(alerta.getNotificarEmail());
+        response.setDataCriacao(alerta.getDataCriacao());
+        response.setDataAtualizacao(alerta.getDataAtualizacao());
+        return response;
     }
 }

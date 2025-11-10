@@ -1,16 +1,26 @@
 package com.nucleo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "alertas")
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Alerta extends BaseEntity {
 
-    @Column(name = "usuario_id", nullable = false)
-    private Long usuarioId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(name = "nome_regra", length = 120, nullable = false)
     private String nomeRegra;
@@ -19,11 +29,13 @@ public class Alerta extends BaseEntity {
     @Column(name = "tipo", nullable = false, length = 30)
     private TipoAlerta tipo;
 
-    @Column(name = "categoria_id")
-    private Long categoriaId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
-    @Column(name = "conta_id")
-    private Long contaId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "conta_id")
+    private ContasBancarias conta;
 
     @Column(name = "limite_valor", precision = 14, scale = 2)
     private BigDecimal limiteValor;
@@ -32,77 +44,12 @@ public class Alerta extends BaseEntity {
     private Integer janelaDias;
 
     @Column(name = "notificar_email", nullable = false)
+    @Builder.Default
     private Boolean notificarEmail = true;
 
     public enum TipoAlerta {
         LIMITE_CATEGORIA,
         GASTO_ATIPICO,
         SALDO_MINIMO
-    }
-
-    // Getters e setters
-
-    public Long getUsuarioId() {
-        return usuarioId;
-    }
-
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
-    }
-
-    public String getNomeRegra() {
-        return nomeRegra;
-    }
-
-    public void setNomeRegra(String nomeRegra) {
-        this.nomeRegra = nomeRegra;
-    }
-
-    public TipoAlerta getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(TipoAlerta tipo) {
-        this.tipo = tipo;
-    }
-
-    public Long getCategoriaId() {
-        return categoriaId;
-    }
-
-    public void setCategoriaId(Long categoriaId) {
-        this.categoriaId = categoriaId;
-    }
-
-    public Long getContaId() {
-        return contaId;
-    }
-
-    public void setContaId(Long contaId) {
-        this.contaId = contaId;
-    }
-
-    public BigDecimal getLimiteValor() {
-        return limiteValor;
-    }
-
-    public void setLimiteValor(BigDecimal limiteValor) {
-        this.limiteValor = limiteValor;
-    }
-
-    public Integer getJanelaDias() {
-        return janelaDias;
-    }
-
-    public void setJanelaDias(Integer janelaDias) {
-        this.janelaDias = janelaDias;
-    }
-
-    public Boolean getNotificarEmail() {
-        return notificarEmail;
-    }
-
-    public void setNotificarEmail(Boolean notificarEmail) {
-        this.notificarEmail = notificarEmail;
     }
 }

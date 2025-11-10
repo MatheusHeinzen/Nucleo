@@ -85,7 +85,7 @@ class ContasBancariasServiceTest {
 
     @Test
     @DisplayName("Deve criar nova conta bancária para o usuário logado")
-    void deveCriarContaBancaria() {
+    void deveCriarContaBancaria() throws Exception {
         BDDMockito.given(usuarioService.buscarEntidadePorId(1L)).willReturn(usuario);
         BDDMockito.given(contasRepository.save(any(ContasBancarias.class))).willReturn(conta);
 

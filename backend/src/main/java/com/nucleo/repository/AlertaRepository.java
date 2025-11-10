@@ -1,6 +1,7 @@
 package com.nucleo.repository;
 
 import com.nucleo.model.Alerta;
+import com.nucleo.model.Usuario;
 import com.nucleo.repository.generic.BaseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,13 +13,13 @@ import java.util.Optional;
 @Repository
 public interface AlertaRepository extends BaseRepository<Alerta, Long> {
 
-    List<Alerta> findByUsuarioIdAndAtivoTrue(Long usuarioId);
+    List<Alerta> findByUsuarioAndAtivoTrue(Usuario usuario);
 
-    Page<Alerta> findByUsuarioIdAndAtivoTrue(Long usuarioId, Pageable pageable);
+    Page<Alerta> findByUsuarioAndAtivoTrue(Usuario usuario, Pageable pageable);
 
-    Optional<Alerta> findByIdAndUsuarioIdAndAtivoTrue(Long id, Long usuarioId);
+    Optional<Alerta> findByIdAndUsuarioAndAtivoTrue(Long id, Usuario usuario);
 
-    List<Alerta> findByUsuarioIdAndTipoAndAtivoTrue(Long usuarioId, Alerta.TipoAlerta tipo);
+    List<Alerta> findByUsuarioAndTipoAndAtivoTrue(Usuario usuario, Alerta.TipoAlerta tipo);
 
-    boolean existsByIdAndUsuarioIdAndAtivoTrue(Long id, Long usuarioId);
+    boolean existsByIdAndUsuarioAndAtivoTrue(Long id, Usuario usuario);
 }
