@@ -13,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
+import static com.nucleo.security.SecurityUtils.getCurrentUserId;
 import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
 
 
@@ -21,7 +22,7 @@ import static com.nucleo.utils.EntityUtils.atualizarSeDiferente;
 public class MetaService {
 
     private final MetaRepository metaRepository;
-    private final SecurityUtils securityUtils;
+
 
 
     public Meta criar(Meta meta) throws EntityNotCreatedException {
@@ -54,14 +55,32 @@ public class MetaService {
 
 
     public Meta buscarPorId(Long id, Long usuarioId) {
-        Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
-
-        
-        if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
-            throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
+        try{
+            Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
+            if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
+                throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
+            }
+            return meta;
+        }catch (EntityNotFoundException e){
+            throw new EntityNotFoundException("meta.not-found");
         }
-        
-        return meta;
+
+
+    }
+
+    public Meta buscarPorId(Long id) {
+        try{
+            Long usuarioId = getCurrentUserId();
+            Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
+            if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
+                throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
+            }
+            return meta;
+        }catch (EntityNotFoundException e){
+            throw new EntityNotFoundException("meta.not-found");
+        }
+
+
     }
 
     public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {
@@ -85,11 +104,11 @@ public class MetaService {
 
     public void cancelar(Long id,Long userId) throws EntityNotDeletedException {
         try {
-            Long usuarioId = null;
+            Long usuarioId;
             if(SecurityUtils.isAdmin()) {
                 usuarioId = userId;
             }else{
-                usuarioId = SecurityUtils.getCurrentUserId();
+                usuarioId = getCurrentUserId();
             }
 
             Meta meta = buscarPorId(id,usuarioId);
@@ -99,4 +118,15 @@ public class MetaService {
             throw new EntityNotDeletedException("meta.not-deleted");
         }
     }
+    public void cancelar(Long id) throws EntityNotDeletedException {
+        try {
+
+            Meta meta = buscarPorId(id,getCurrentUserId());
+            meta.setStatus(StatusMeta.cancelada);
+            metaRepository.save(meta);
+        } catch (Exception e) {
+            throw new EntityNotDeletedException("meta.not-deleted");
+        }
+    }
+
 }

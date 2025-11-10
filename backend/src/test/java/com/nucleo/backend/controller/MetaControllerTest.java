@@ -27,6 +27,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -117,37 +118,52 @@ class MetaControllerTest {
 
         BDDMockito.given(metaService.buscarPorId(eq(1L), any(Long.class))).willReturn(meta);
 
-        mockMvc.perform(get("/api/metas/1/userid"))
+        mockMvc.perform(get("/api/metas/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.titulo").value("Nova lente"));
     }
 
     @Test
-    @DisplayName("Deve atualizar meta existente")
+    @DisplayName("Deve atualizar meta do usuário logado")
     @WithMockUser(username = "usuario@nucleo.com", roles = "USER")
     void deveAtualizarMeta() throws Exception {
-        Meta metaAtualizada = Meta.builder()
-                .id(1L)
-                .titulo("Juntar para intercâmbio")
-                .valorAlvo(new BigDecimal("7000.00"))
-                .status(StatusMeta.ativa)
-                .build();
+        Meta metametaAtualizada = new Meta(
+                1L,
+                1L,
+                "Juntar para intercâmbio",
+                new BigDecimal("7000.00"),
+                LocalDate.now(),
+                1L,
+                StatusMeta.ativa
+        );
 
-        BDDMockito.given(metaService.atualizar(eq(1L), any(Meta.class), any(Long.class))).willReturn(metaAtualizada);
+        // Mock estático do SecurityUtils
+        BDDMockito.given(SecurityUtils.getCurrentUserId()).willReturn(1L);
+        BDDMockito.given(SecurityUtils.isAdmin()).willReturn(false);
 
-        mockMvc.perform(put("/api/metas/1/1")
+        // Mock do service (agora injetado corretamente)
+        BDDMockito.given(metaService.atualizar(
+                any(Long.class),
+                any(Meta.class),
+                any(Long.class)
+        )).willReturn(metametaAtualizada);
+
+        mockMvc.perform(put("/api/metas/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(metaAtualizada)))
+                        .content(objectMapper.writeValueAsString(metametaAtualizada)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.titulo").value("Juntar para intercâmbio"))
                 .andExpect(jsonPath("$.valorAlvo").value(7000.00));
+
+        BDDMockito.verify(metaService).atualizar(any(Long.class), any(Meta.class), any(Long.class));
     }
 
     @Test
-    @DisplayName("Deve cancelar (deletar logicamente) uma meta")
+    @DisplayName("Deve cancelar/eletar uma meta")
     @WithMockUser(username = "usuario@nucleo.com", roles = "USER")
     void deveCancelarMeta() throws Exception {
-        mockMvc.perform(delete("/api/metas/1/1"))
+        mockMvc.perform(delete("/api/metas/1"))
                 .andExpect(status().isNoContent());
     }
 }

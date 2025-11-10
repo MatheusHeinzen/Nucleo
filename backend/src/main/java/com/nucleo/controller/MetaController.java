@@ -48,16 +48,24 @@ public class MetaController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Meta>> listarTodas() {
         List<Meta> metas = metaService.listarTodas();
-        return ResponseEntity.ok(metas);
+        return ResponseEntity.ok().body(metas);
     }
 
-    @GetMapping({"/id","/{id}/{idUsuario}"})
+    @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id,@PathVariable(required = false) Long idUsuario) {
-
-        Meta meta = metaService.buscarPorId(id, idUsuario);
-        return ResponseEntity.ok(meta);
+    public ResponseEntity<Meta> buscarPorId(@PathVariable Long id) {
+        Meta meta = metaService.buscarPorId(id, SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok().body(meta);
     }
+
+    @GetMapping("/{id}/usuario/{idUsuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Meta> buscarPorIdComoAdmin(@PathVariable Long id, @PathVariable Long idUsuario) {
+        Meta meta = metaService.buscarPorId(id, idUsuario);
+        return ResponseEntity.ok().body(meta);
+    }
+
+
 
     @GetMapping("/usuario/{usuarioId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,26 +74,34 @@ public class MetaController {
         return ResponseEntity.ok(metas);
     }
 
-    @PutMapping({"/id","/{id}/{idUsuario}"})
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta,@PathVariable(required = false) Long idUsuario) {
-        Long usuarioId = null;
-        if(meta.getId() != null){
-            if(SecurityUtils.isAdmin()){
-                usuarioId = idUsuario;
-            }
-        }else{
-            usuarioId = SecurityUtils.getCurrentUserId();
-        }
-
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER')")
+    public ResponseEntity<Meta> atualizar(@PathVariable Long id, @RequestBody Meta meta) {
+        Long usuarioId = SecurityUtils.getCurrentUserId();
         Meta metaAtualizada = metaService.atualizar(id, meta, usuarioId);
         return ResponseEntity.ok(metaAtualizada);
     }
 
+    @PutMapping("/{id}/usuario/{idUsuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Meta> atualizarComoAdmin(@PathVariable Long id,
+                                                   @PathVariable Long idUsuario,
+                                                   @RequestBody Meta meta) {
+        Meta metaAtualizada = metaService.atualizar(id, meta, idUsuario);
+        return ResponseEntity.ok(metaAtualizada);
+    }
+
+
     @DeleteMapping({"/{id}", "/{id}/{UserId}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id,@PathVariable(required = false) Long UserId) {
-        metaService.cancelar(id,UserId);
+        Long usuarioId = null;
+        if(UserId != null){
+            if(SecurityUtils.isAdmin()){
+                metaService.cancelar(id, UserId);
+            }
+        }
+        metaService.cancelar(id);
         return ResponseEntity.noContent().build();
     }
 

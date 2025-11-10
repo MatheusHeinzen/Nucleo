@@ -46,7 +46,7 @@ public class ContasBancariasController {
     public ResponseEntity<ContasBancarias> buscarPorId(@PathVariable Long id) {
         Long usuarioId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
-        ContasBancarias conta = contasService.buscarPorId(id, usuarioId, isAdmin);
+        ContasBancarias conta = contasService.buscarPorId(id);
         return ResponseEntity.ok().body(conta);
     }
 
@@ -60,9 +60,8 @@ public class ContasBancariasController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ContasBancarias> atualizar(@PathVariable Long id, @RequestBody ContasBancarias conta) {
-        Long usuarioId = SecurityUtils.getCurrentUserId();
-        boolean isAdmin = SecurityUtils.isAdmin();
-        ContasBancarias contaAtualizada = contasService.atualizar(id, conta, usuarioId, isAdmin);
+
+        ContasBancarias contaAtualizada = contasService.atualizar(id, conta);
         return ResponseEntity.ok().body(contaAtualizada);
     }
 

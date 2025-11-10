@@ -152,18 +152,34 @@ class CategoriaServiceTest {
     @Test
     @DisplayName("Deve atualizar categoria existente")
     void deveAtualizarCategoria() {
-        CategoriaRequestDTO dto = new CategoriaRequestDTO("Lazer", "Passeios e hobbies", Categoria.TipoCategoria.SAIDA);
+        CategoriaRequestDTO dto = new CategoriaRequestDTO(
+                "Lazer", "Passeios e hobbies", Categoria.TipoCategoria.SAIDA
+        );
 
-        BDDMockito.given(categoriaRepository.findByIdAndAtivoTrue(1L)).willReturn(Optional.of(categoria));
-        BDDMockito.given(categoriaService.criar(dto)).willReturn(categoria);
+        Categoria categoriaExistente = Categoria.builder()
+                .id(1L)
+                .nome("Antigo nome")
+                .descricao("Antiga descrição")
+                .tipo(Categoria.TipoCategoria.ENTRADA)
+                .ativo(true)
+                .build();
+
+        // Mock: ao buscar a categoria existente
+        BDDMockito.given(categoriaRepository.findByIdAndAtivoTrue(1L))
+                .willReturn(Optional.of(categoriaExistente));
+
+        // Mock: ao salvar a categoria atualizada
+        BDDMockito.given(categoriaRepository.save(any(Categoria.class)))
+                .willAnswer(invocation -> invocation.getArgument(0)); // retorna o mesmo objeto atualizado
 
         Categoria resultado = categoriaService.atualizar(1L, dto);
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getNome()).isEqualTo("Lazer");
-
-
+        assertThat(resultado.getDescricao()).isEqualTo("Passeios e hobbies");
+        assertThat(resultado.getTipo()).isEqualTo(Categoria.TipoCategoria.SAIDA);
     }
+
 
     @Test
     @DisplayName("Deve lançar erro ao atualizar categoria inexistente")

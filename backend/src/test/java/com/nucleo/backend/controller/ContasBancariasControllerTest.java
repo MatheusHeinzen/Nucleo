@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -75,7 +77,7 @@ class ContasBancariasControllerTest {
                 .saldoInicial(new BigDecimal("1500.00"))
                 .build();
 
-        BDDMockito.given(contasService.criar(conta)).willReturn(conta);
+        BDDMockito.given(contasService.criar(any(ContasBancarias.class))).willReturn(conta);
 
         mockMvc.perform(post("/api/contas")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +140,7 @@ class ContasBancariasControllerTest {
                 .saldoInicial(BigDecimal.ZERO)
                 .build();
 
-        BDDMockito.given(contasService.buscarPorId(4L, 1L, false)).willReturn(conta);
+        BDDMockito.given(contasService.buscarPorId(4L)).willReturn(conta);
 
         mockMvc.perform(get("/api/contas/4"))
                 .andExpect(status().isOk())
@@ -151,7 +153,6 @@ class ContasBancariasControllerTest {
     @WithMockUser(username = "joao@nucleo.com", roles = "USER")
     void deveAtualizarConta() throws Exception {
         ContasBancarias atualizada = ContasBancarias.builder()
-                .id(5L)
                 .instituicao("Itau")
                 .tipo(TipoConta.CORRENTE)
                 .apelido("Conta Atualizada")
@@ -159,9 +160,9 @@ class ContasBancariasControllerTest {
                 .saldoInicial(new BigDecimal("4000.00"))
                 .build();
 
-        BDDMockito.given(contasService.atualizar(5L, atualizada, 1L, false)).willReturn(atualizada);
+        BDDMockito.given(contasService.atualizar(eq(1L), any(ContasBancarias.class))).willReturn(atualizada);
 
-        mockMvc.perform(put("/api/contas/5")
+        mockMvc.perform(put("/api/contas/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(atualizada)))
                 .andDo(print())

@@ -33,26 +33,31 @@ public class ContasBancariasService {
         return contasRepository.findAll();
     }
 
-    public ContasBancarias buscarPorId(Long id, Long usuarioId, boolean isAdmin) {
-        if (isAdmin) {
+    public ContasBancarias buscarPorId(Long id) {
+        if (SecurityUtils.isAdmin()) {
             return contasRepository.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
         }
-        return contasRepository.findByIdAndUsuarioIdAndAtivoTrue(id, usuarioId)
+        return contasRepository.findByIdAndUsuarioIdAndAtivoTrue(id, SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada ou inativa."));
     }
 
-    public ContasBancarias atualizar(Long id, ContasBancarias contaAtualizada, Long usuarioId, boolean isAdmin) {
-        ContasBancarias contaExistente = buscarPorId(id, usuarioId, isAdmin);
+    public ContasBancarias atualizar(Long id, ContasBancarias contaAtualizada) {
+        try{
+            ContasBancarias contaExistente = buscarPorId(id);
 
-        contaExistente.setInstituicao(contaAtualizada.getInstituicao());
-        contaExistente.setTipo(contaAtualizada.getTipo());
-        contaExistente.setApelido(contaAtualizada.getApelido());
-        contaExistente.setMoeda(contaAtualizada.getMoeda());
-        contaExistente.setSaldoInicial(contaAtualizada.getSaldoInicial());
+            contaExistente.setInstituicao(contaAtualizada.getInstituicao());
+            contaExistente.setTipo(contaAtualizada.getTipo());
+            contaExistente.setApelido(contaAtualizada.getApelido());
+            contaExistente.setMoeda(contaAtualizada.getMoeda());
+            contaExistente.setSaldoInicial(contaAtualizada.getSaldoInicial());
 
-        return contasRepository.save(contaExistente);
-    }
+            return contasRepository.save(contaExistente);
+
+        }catch (EntityNotFoundException e){
+                throw new EntityNotFoundException();
+            }
+        }
 
     public void deletar(Long id, Long usuarioId, boolean isAdmin) {
         ContasBancarias conta;

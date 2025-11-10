@@ -133,7 +133,7 @@ class ContasBancariasServiceTest {
         BDDMockito.given(contasRepository.findByIdAndUsuarioIdAndAtivoTrue(1L, 1L))
                 .willReturn(Optional.of(conta));
 
-        ContasBancarias resultado = contasService.buscarPorId(1L, 1L, false);
+        ContasBancarias resultado = contasService.buscarPorId(1L);
 
         assertThat(resultado.getInstituicao()).isEqualTo("Nubank");
     }
@@ -141,10 +141,13 @@ class ContasBancariasServiceTest {
     @Test
     @DisplayName("Deve buscar conta por ID como administrador")
     void deveBuscarContaComoAdmin() {
+
+
+        securityUtilsMock.when(SecurityUtils::isAdmin).thenReturn(true);
         BDDMockito.given(contasRepository.findById(1L))
                 .willReturn(Optional.of(conta));
 
-        ContasBancarias resultado = contasService.buscarPorId(1L, 1L, true);
+        ContasBancarias resultado = contasService.buscarPorId(1L);
 
         assertThat(resultado.getTipo()).isEqualTo(TipoConta.CORRENTE);
     }
@@ -156,7 +159,7 @@ class ContasBancariasServiceTest {
                 .willReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class,
-                () -> contasService.buscarPorId(99L, 1L, false));
+                () -> contasService.buscarPorId(99L));
     }
 
     // ---------------------------
@@ -180,7 +183,7 @@ class ContasBancariasServiceTest {
                 .willReturn(Optional.of(conta));
         BDDMockito.given(contasRepository.save(any(ContasBancarias.class))).willReturn(atualizada);
 
-        ContasBancarias resultado = contasService.atualizar(1L, atualizada, 1L, false);
+        ContasBancarias resultado = contasService.atualizar(1L, atualizada);
 
         assertThat(resultado.getInstituicao()).isEqualTo("Banco Inter");
         assertThat(resultado.getApelido()).isEqualTo("Conta Poupança");
@@ -198,7 +201,7 @@ class ContasBancariasServiceTest {
                 .willReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class,
-                () -> contasService.atualizar(99L, atualizada, 1L, false));
+                () -> contasService.atualizar(99L, atualizada));
     }
 
     // ---------------------------
