@@ -3,12 +3,12 @@ package com.nucleo.service;
 import com.nucleo.dto.CategoriaRequestDTO;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.security.SecurityUtils;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,12 +47,8 @@ public class CategoriaService {
     }
 
     public Categoria buscarPorId(Long id) throws EntityNotFoundException {
-        try {
-            return categoriaRepository.findByIdAndAtivoTrue(id)
-                    .orElseThrow(() -> new EntityNotFoundException("categoria.not-found"));
-        } catch (Exception e) {
-            throw new EntityNotFoundException("categoria.not-found");
-        }
+        return categoriaRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("categoria.not-found"));
     }
 
     public List<Categoria> buscarPorTipo(Categoria.TipoCategoria tipo) {

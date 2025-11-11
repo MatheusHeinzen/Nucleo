@@ -3,6 +3,7 @@ package com.nucleo.backend.service;
 import com.nucleo.dto.TransacaoRequestDTO;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Categoria;
 import com.nucleo.model.Transacao;
@@ -12,7 +13,6 @@ import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.CategoriaService;
 import com.nucleo.service.TransacaoService;
 import com.nucleo.service.UsuarioService;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,9 +51,19 @@ class TransacaoServiceTest {
     @MockBean
     private UsuarioService usuarioService;
 
+    @MockBean
+    private com.nucleo.repository.ContasBancariasRepository contasBancariasRepository;
+
+    @MockBean
+    private com.nucleo.service.AlertaService alertaService;
+
+    @MockBean
+    private com.nucleo.service.EmailService emailService;
+
     private Usuario usuario;
     private Categoria categoria;
     private Transacao transacao;
+    private com.nucleo.model.ContasBancarias conta;
 
     @BeforeEach
     void setup() {
@@ -71,6 +81,14 @@ class TransacaoServiceTest {
                 .tipo(Categoria.TipoCategoria.SAIDA)
                 .build();
 
+        conta = com.nucleo.model.ContasBancarias.builder()
+                .id(1L)
+                .instituicao("Banco Teste")
+                .tipo(com.nucleo.model.TipoConta.CORRENTE)
+                .usuario(usuario)
+                .ativo(true)
+                .build();
+
         transacao = Transacao.builder()
                 .id(1L)
                 .descricao("Supermercado")
@@ -79,6 +97,7 @@ class TransacaoServiceTest {
                 .tipo(Transacao.TipoTransacao.SAIDA)
                 .usuario(usuario)
                 .categoria(categoria)
+                .conta(conta)
                 .ativo(true)
                 .build();
         securityUtilsMock = Mockito.mockStatic(SecurityUtils.class);
@@ -107,11 +126,14 @@ class TransacaoServiceTest {
                 transacao.getData(),
                 transacao.getTipo(),
                 1L,
-                null
+                1L
         );
 
         BDDMockito.given(usuarioService.buscarEntidadePorId(1L)).willReturn(usuario);
         BDDMockito.given(categoriaService.buscarPorId(1L)).willReturn(categoria);
+        BDDMockito.given(contasBancariasRepository.findByIdAndUsuarioIdAndAtivoTrue(1L, 1L)).willReturn(Optional.of(conta));
+        BDDMockito.given(transacaoRepository.findByUsuarioAndPeriodo(any(), any(), any())).willReturn(List.of());
+        BDDMockito.given(alertaService.listarPorUsuario(1L)).willReturn(List.of());
         BDDMockito.given(transacaoRepository.save(any(Transacao.class))).willReturn(transacao);
 
         Transacao resultado = transacaoService.criar(request);
@@ -155,6 +177,8 @@ class TransacaoServiceTest {
     @Test
     @DisplayName("Deve listar todas as transações de um usuário específico (admin)")
     void deveListarTodasPorUsuarioId() {
+        BDDMockito.given(usuarioService.buscarPorId(1L))
+                .willReturn(new com.nucleo.dto.UsuarioResponseDTO(1L, "Isabel", "isa@nucleo.com", java.util.Set.of(com.nucleo.model.Usuario.Role.ROLE_USER), true));
         BDDMockito.given(transacaoRepository.findByUsuarioId(1L))
                 .willReturn(List.of(transacao));
 

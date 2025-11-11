@@ -2,6 +2,7 @@ package com.nucleo.backend.service;
 
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Beneficio;
 import com.nucleo.model.Usuario;
@@ -9,7 +10,6 @@ import com.nucleo.repository.BeneficioRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.BeneficioService;
 import com.nucleo.service.UsuarioService;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

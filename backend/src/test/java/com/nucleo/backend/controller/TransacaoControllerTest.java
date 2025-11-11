@@ -1,4 +1,4 @@
-package com.nucleo.controller;
+package com.nucleo.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nucleo.dto.TransacaoRequestDTO;
@@ -122,7 +122,7 @@ class TransacaoControllerTest {
 
         BDDMockito.given(transacaoService.listarTodas()).willReturn(List.of(t1, t2));
 
-        mockMvc.perform(get("/api/transacoes"))
+        mockMvc.perform(get("/api/transacoes/user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].descricao").value("Salário mensal"))
                 .andExpect(jsonPath("$[1].descricao").value("Aluguel"));

@@ -121,26 +121,17 @@ public class TransacaoService {
     }
 
 
-    public List<Transacao> listarTodas() throws EntityNotFoundException {
-        try {
-            return transacaoRepository.findByUsuarioId(getCurrentUserId());
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
-        }
+    public List<Transacao> listarTodas() {
+        return transacaoRepository.findByUsuarioId(getCurrentUserId());
     }
 
 
     public List<Transacao> listarTodas(Long id) throws EntityNotFoundException {
-
-        try {
-            UsuarioResponseDTO u= usuarioService.buscarPorId(id);
-            if(u == null){
-                throw new EntityNotFoundException("usuario.not-found");
-            }
-            return transacaoRepository.findByUsuarioId(id);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
+        UsuarioResponseDTO u = usuarioService.buscarPorId(id);
+        if(u == null){
+            throw new EntityNotFoundException("usuario.not-found");
         }
+        return transacaoRepository.findByUsuarioId(id);
     }
 
     public BigDecimal getTotalEntradas(Long usuarioId) throws EntityNotFoundException {
@@ -175,7 +166,7 @@ public class TransacaoService {
                 .orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
         
         if (!SecurityUtils.isAdmin() && !transacao.getUsuario().getId().equals(getCurrentUserId())) {
-            throw new EntityNotFoundException("Transação não encontrada ou não pertence a este usuário.");
+            throw new EntityNotFoundException("transacao.acesso-negado");
         }
         
         return transacao;

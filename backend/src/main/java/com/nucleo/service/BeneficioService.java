@@ -2,12 +2,12 @@ package com.nucleo.service;
 
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Beneficio;
 import com.nucleo.model.Usuario;
 import com.nucleo.repository.BeneficioRepository;
 import com.nucleo.security.SecurityUtils;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -50,12 +50,8 @@ public class BeneficioService {
     }
 
     public Beneficio buscarPorId(Long id) throws EntityNotFoundException {
-        try {
-            return beneficioRepository.findByIdAndAtivoTrue(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Beneficio não encontrado"));
-        } catch (Exception e) {
-            throw new EntityNotFoundException("beneficio.not-found");
-        }
+        return beneficioRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("beneficio.not-found"));
     }
 
     public List<Beneficio> buscarPorUsuario(Long usuarioId) throws EntityNotFoundException {
@@ -92,20 +88,14 @@ public class BeneficioService {
     }
 
     public Beneficio buscarPorIdEUsuario(Long id) throws EntityNotFoundException {
-        try {
-
-
-            Beneficio beneficio = beneficioRepository.findByIdAndAtivoTrue(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Beneficio não encontrado"));
-            
-            if (!SecurityUtils.isAdmin() && !beneficio.getUsuario().getId().equals(SecurityUtils.getCurrentUserId())) {
-                throw new EntityNotFoundException("Acesso negado a este benefício");
-            }
-            
-            return beneficio;
-        } catch (Exception e) {
-            throw new EntityNotFoundException("beneficio.not-found");
+        Beneficio beneficio = beneficioRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new EntityNotFoundException("beneficio.not-found"));
+        
+        if (!SecurityUtils.isAdmin() && !beneficio.getUsuario().getId().equals(SecurityUtils.getCurrentUserId())) {
+            throw new EntityNotFoundException("beneficio.acesso-negado");
         }
+        
+        return beneficio;
     }
 
     public Beneficio atualizar(Long id, Beneficio beneficioAtualizado) throws EntityNotUpdatedException {
