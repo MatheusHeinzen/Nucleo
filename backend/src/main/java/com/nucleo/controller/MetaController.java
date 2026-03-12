@@ -21,16 +21,15 @@ public class MetaController {
 
     private final MetaService metaService;
 
-    @PostMapping("/{id}")
+    @PostMapping({"","/{id}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Meta> criar(@RequestBody Meta meta,@PathVariable Long id) {
+    public ResponseEntity<Meta> criar(@RequestBody Meta meta,@PathVariable(required = false) Long id) {
         if(meta.getId() != null){
             if(SecurityUtils.isAdmin()){
                 meta.setId(id);
             }
         }else{
             meta.setUsuarioId(SecurityUtils.getCurrentUserId());
-
         }
         Meta novaMeta = metaService.criar(meta);
         return new ResponseEntity<>(novaMeta, HttpStatus.CREATED);
@@ -95,7 +94,6 @@ public class MetaController {
     @DeleteMapping({"/{id}", "/{id}/{UserId}"})
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id,@PathVariable(required = false) Long UserId) {
-        Long usuarioId = null;
         if(UserId != null){
             if(SecurityUtils.isAdmin()){
                 metaService.cancelar(id, UserId);

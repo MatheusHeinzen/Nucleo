@@ -1,5 +1,6 @@
 package com.nucleo.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nucleo.model.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "transacoes")
 @Getter
@@ -38,7 +40,6 @@ public class Transacao extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conta_id", nullable = false)
     private ContasBancarias conta;
-
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,6 +1,7 @@
 package com.nucleo.backend.service;
 
 import com.nucleo.dto.TransacaoRequestDTO;
+import com.nucleo.dto.TransacaoResponseDTO;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotFoundException;
@@ -198,7 +199,7 @@ class TransacaoServiceTest {
         BDDMockito.given(transacaoRepository.findById(1L))
                 .willReturn(Optional.of(transacao));
 
-        Transacao resultado = transacaoService.buscarPorIdEUsuario(1L);
+        TransacaoResponseDTO resultado = transacaoService.buscarPorIdEUsuario(1L);
 
         assertThat(resultado.getDescricao()).isEqualTo("Supermercado");
     }
@@ -235,7 +236,7 @@ class TransacaoServiceTest {
         BDDMockito.given(transacaoRepository.save(any(Transacao.class)))
                 .willReturn(transacao);
 
-        Transacao resultado = transacaoService.atualizar(1L, request);
+        TransacaoResponseDTO resultado = transacaoService.atualizar(1L, request);
 
         assertThat(resultado.getDescricao()).contains("Atualizado");
         assertThat(resultado.getValor()).isEqualByComparingTo("130.00");

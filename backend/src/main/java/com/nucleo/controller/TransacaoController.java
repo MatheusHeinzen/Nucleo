@@ -53,19 +53,23 @@ public class TransacaoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<TransacaoResponseDTO> buscarPorId(@PathVariable Long id) {
 
-        Transacao transacao = transacaoService.buscarPorIdEUsuario(id);
-        return ResponseEntity.ok(TransacaoResponseDTO.fromEntity(transacao));
+        TransacaoResponseDTO transacao = transacaoService.buscarPorIdEUsuario(id);
+        return ResponseEntity.ok(transacao);
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
 
-        Transacao transacao = transacaoService.atualizar(id, request);
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<TransacaoResponseDTO > atualizar(@PathVariable Long id, @RequestBody TransacaoRequestDTO request) {
+        TransacaoResponseDTO  transacao = transacaoService.atualizar(id, request);
         return ResponseEntity.ok().body(transacao);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
 
         transacaoService.excluir(id);

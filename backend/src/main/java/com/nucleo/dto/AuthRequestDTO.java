@@ -21,6 +21,7 @@ public class AuthRequestDTO {
     private String email;
     
     @NotBlank(message = "Senha é obrigatória")
+
     private String senha;
 }
 
