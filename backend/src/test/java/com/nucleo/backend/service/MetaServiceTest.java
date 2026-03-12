@@ -3,13 +3,13 @@ package com.nucleo.backend.service;
 
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Meta;
 import com.nucleo.model.StatusMeta;
 import com.nucleo.repository.MetaRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.MetaService;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

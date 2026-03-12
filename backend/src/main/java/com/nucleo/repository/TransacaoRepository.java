@@ -42,4 +42,5 @@ public interface TransacaoRepository extends BaseRepository<Transacao, Long> {
 
     List<Transacao> findByUsuarioId(Long id);
 
+    Transacao findTransacaoByIdAndUsuario_Id(Long id, Long usuarioId);
 }

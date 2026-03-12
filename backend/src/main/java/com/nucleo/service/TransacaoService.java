@@ -1,6 +1,7 @@
 package com.nucleo.service;
 
 import com.nucleo.dto.TransacaoRequestDTO;
+import com.nucleo.dto.TransacaoResponseDTO;
 import com.nucleo.dto.UsuarioResponseDTO;
 import com.nucleo.exception.AuthenticationException;
 import com.nucleo.exception.EntityNotCreatedException;
@@ -87,7 +88,7 @@ public class TransacaoService {
                     System.out.println(gastosUltimoMes);
                         if (gastosUltimoMes.compareTo(alert.getLimiteValor()) > 0) {
                             emailService.enviarEmail(
-                                    "joaogotado@gmail.com",
+                                    usuario.getEmail(),
                                     "⚠️ Alerta de Gastos - Núcleo Financeiro",
                                     "Olá, " + usuario.getNome() +
                                             "! Você ultrapassou seu limite de gastos de R$" + alert.getLimiteValor() +
@@ -101,7 +102,7 @@ public class TransacaoService {
 
                     if(getSaldo(getCurrentUserId()).compareTo(alert.getLimiteValor())<=0) {
                         emailService.enviarEmail(
-                                "joaogotado@gmail.com",
+                                usuario.getEmail(),
                                 "⚠️ Alerta de Gastos - Núcleo Financeiro",
                                 "Olá, " + usuario.getNome() +
                                         "! Você esta abaixo do limite de saldo de R$" + alert.getLimiteValor() +". " +
@@ -121,26 +122,17 @@ public class TransacaoService {
     }
 
 
-    public List<Transacao> listarTodas() throws EntityNotFoundException {
-        try {
-            return transacaoRepository.findByUsuarioId(getCurrentUserId());
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
-        }
+    public List<Transacao> listarTodas() {
+        return transacaoRepository.findByUsuarioId(getCurrentUserId());
     }
 
 
     public List<Transacao> listarTodas(Long id) throws EntityNotFoundException {
-
-        try {
-            UsuarioResponseDTO u= usuarioService.buscarPorId(id);
-            if(u == null){
-                throw new EntityNotFoundException("usuario.not-found");
-            }
-            return transacaoRepository.findByUsuarioId(id);
-        } catch (Exception e) {
-            throw new EntityNotFoundException("transacao.not-found");
+        UsuarioResponseDTO u = usuarioService.buscarPorId(id);
+        if(u == null){
+            throw new EntityNotFoundException("usuario.not-found");
         }
+        return transacaoRepository.findByUsuarioId(id);
     }
 
     public BigDecimal getTotalEntradas(Long usuarioId) throws EntityNotFoundException {
@@ -170,18 +162,19 @@ public class TransacaoService {
             return transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
     }
 
-    public Transacao buscarPorIdEUsuario(Long id) throws EntityNotFoundException {
+    public TransacaoResponseDTO buscarPorIdEUsuario(Long id) throws EntityNotFoundException {
         Transacao transacao = transacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
-        
+
         if (!SecurityUtils.isAdmin() && !transacao.getUsuario().getId().equals(getCurrentUserId())) {
-            throw new EntityNotFoundException("Transação não encontrada ou não pertence a este usuário.");
+            throw new EntityNotFoundException("transacao.acesso-negado");
         }
-        
-        return transacao;
+
+        return TransacaoResponseDTO.fromEntity(transacao);
     }
 
-    public Transacao atualizar(Long id, TransacaoRequestDTO transacao) throws EntityNotUpdatedException {
+
+    public TransacaoResponseDTO  atualizar(Long id, TransacaoRequestDTO transacao) throws EntityNotUpdatedException {
         try {
             Long usuarioId = getCurrentUserId();
             Usuario usuario = usuarioService.buscarEntidadePorId(usuarioId);
@@ -189,12 +182,12 @@ public class TransacaoService {
                 throw new EntityNotFoundException("usuario.not-found");
             }
 
-            Transacao transacaoExistente = buscarPorIdEUsuario(id);
+            Transacao transacaoExistente = transacaoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("transacao.not-found"));
             if(transacaoExistente == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
 
-            Categoria categoria = categoriaService.buscarPorId (transacao.categoriaId());
+            Categoria categoria = categoriaService.buscarPorId(transacao.categoriaId());
             if(categoria == null){
                 throw new EntityNotFoundException("categoria.not-found");
             }
@@ -206,8 +199,7 @@ public class TransacaoService {
             EntityUtils.atualizarSeDiferente(transacaoExistente::setCategoria,categoria,transacaoExistente.getCategoria());
             EntityUtils.atualizarSeDiferente(transacaoExistente::setUsuario,usuario,transacaoExistente.getUsuario());
 
-
-            return transacaoRepository.save(transacaoExistente);
+            return TransacaoResponseDTO.fromEntity(transacaoRepository.save(transacaoExistente));
         } catch (Exception e) {
            throw new EntityNotUpdatedException("transacao.not-updated");
         }
@@ -215,12 +207,12 @@ public class TransacaoService {
 
     public void excluir(Long id) throws EntityNotFoundException, EntityNotDeletedException {
         try {
-            Transacao t = buscarPorIdEUsuario(id);
+            TransacaoResponseDTO t = buscarPorIdEUsuario(id);
 
             if(t == null) {
                 throw new EntityNotFoundException("transacao.not-found");
             }
-            if(!t.getUsuario().getId().equals(getCurrentUserId()) && !SecurityUtils.isAdmin()) {
+            if(!t.getUsuarioId().equals(getCurrentUserId()) && !SecurityUtils.isAdmin()) {
                 throw new AuthenticationException("transacao.not-deleted");
             }
             transacaoRepository.deleteById(t.getId());

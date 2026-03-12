@@ -17,4 +17,6 @@ public record TransacaoRequestDTO (
      Transacao.TipoTransacao tipo,
      Long categoriaId,
      Long contaId
-){}
+){
+
+}

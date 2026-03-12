@@ -2,6 +2,7 @@ package com.nucleo.service;
 
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
+import com.nucleo.exception.EntityNotFoundException;
 import com.nucleo.exception.EntityNotUpdatedException;
 import com.nucleo.model.Meta;
 import com.nucleo.model.StatusMeta;
@@ -9,7 +10,6 @@ import com.nucleo.repository.MetaRepository;
 import com.nucleo.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
@@ -32,8 +32,7 @@ public class MetaService {
             }
             return metaRepository.save(meta);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new EntityNotCreatedException("Erro ao criar meta: " + e.getMessage());
+            throw new EntityNotCreatedException("meta.not-created");
         }
     }
 
@@ -55,32 +54,26 @@ public class MetaService {
 
 
     public Meta buscarPorId(Long id, Long usuarioId) {
-        try{
-            Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
-            if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
-                throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
-            }
-            return meta;
-        }catch (EntityNotFoundException e){
+        Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId, id);
+        if (meta == null) {
             throw new EntityNotFoundException("meta.not-found");
         }
-
-
+        if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
+            throw new EntityNotFoundException("meta.acesso-negado");
+        }
+        return meta;
     }
 
     public Meta buscarPorId(Long id) {
-        try{
-            Long usuarioId = getCurrentUserId();
-            Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId,id);
-            if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
-                throw new EntityNotFoundException("Meta não encontrada ou não pertence a este usuário.");
-            }
-            return meta;
-        }catch (EntityNotFoundException e){
+        Long usuarioId = getCurrentUserId();
+        Meta meta = metaRepository.findByUsuarioIdAndId(usuarioId, id);
+        if (meta == null) {
             throw new EntityNotFoundException("meta.not-found");
         }
-
-
+        if (!SecurityUtils.isAdmin() && !meta.getUsuarioId().equals(usuarioId)) {
+            throw new EntityNotFoundException("meta.acesso-negado");
+        }
+        return meta;
     }
 
     public Meta atualizar(Long id, Meta metaAtualizada, Long usuarioId) {

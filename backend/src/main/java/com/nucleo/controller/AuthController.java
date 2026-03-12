@@ -52,7 +52,7 @@ public class AuthController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
                     @ApiResponse(responseCode = "401", description = "Credenciais inválidas"),
-                    @ApiResponse(responseCode = "400",description = "informacoes invalidas")
+                    @ApiResponse(responseCode = "400",description = "Informacoes invalidas")
             }
     )
     @PostMapping("/login")

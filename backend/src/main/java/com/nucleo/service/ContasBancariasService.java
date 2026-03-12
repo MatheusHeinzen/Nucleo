@@ -32,7 +32,7 @@ public class ContasBancariasService {
         conta.setAtivo(true);
         return contasRepository.save(conta);
         }catch(Exception e){
-            throw new EntityNotCreatedException("conta.not-criated");
+            throw new EntityNotCreatedException("conta.not-created");
         }
     }
 
@@ -57,10 +57,10 @@ public class ContasBancariasService {
     public ContasBancarias buscarPorId(Long id) {
         if (SecurityUtils.isAdmin()) {
             return contasRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
+                    .orElseThrow(() -> new EntityNotFoundException("conta.not-found"));
         }
         return contasRepository.findByIdAndUsuarioIdAndAtivoTrue(id, SecurityUtils.getCurrentUserId())
-                .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada ou inativa."));
+                .orElseThrow(() -> new EntityNotFoundException("conta.acesso-negado"));
     }
 
     public ContasBancarias atualizar(Long id, ContasBancarias contaAtualizada) {
@@ -75,29 +75,31 @@ public class ContasBancariasService {
 
             return contasRepository.save(contaExistente);
 
+        }catch (EntityNotFoundException e){
+            throw e;
         }catch (Exception e){
-                throw new EntityNotUpdatedException("conta.not-updated");
-            }
+            throw new EntityNotUpdatedException("conta.not-updated");
         }
+    }
 
     public void deletar(Long id, Long usuarioId, boolean isAdmin) {
         try{
+            ContasBancarias conta;
+            if (isAdmin) {
+                conta = contasRepository.findById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("conta.not-found"));
+            } else {
+                conta = contasRepository.findByIdAndUsuarioId(id, usuarioId)
+                        .orElseThrow(() -> new EntityNotFoundException("conta.not-found"));
+            }
 
-        ContasBancarias conta;
-        if (isAdmin) {
-            conta = contasRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
-        } else {
-            conta = contasRepository.findByIdAndUsuarioId(id, usuarioId)
-                    .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada."));
-        }
-
-        conta.setAtivo(false);
-        conta.setDeletadoEm(LocalDateTime.now());
-        contasRepository.save(conta);
+            conta.setAtivo(false);
+            conta.setDeletadoEm(LocalDateTime.now());
+            contasRepository.save(conta);
+        }catch (EntityNotFoundException e){
+            throw e;
         }catch (Exception e){
             throw new EntityNotDeletedException("conta.not-deleted");
         }
-
     }
 }

@@ -4,7 +4,6 @@ import com.nucleo.dto.AlertaRequest;
 import com.nucleo.exception.EntityNotCreatedException;
 import com.nucleo.exception.EntityNotDeletedException;
 import com.nucleo.exception.EntityNotUpdatedException;
-import com.nucleo.exception.EntityNotValid;
 import com.nucleo.model.Alerta;
 import com.nucleo.model.Categoria;
 import com.nucleo.model.ContasBancarias;
@@ -138,34 +137,33 @@ public class AlertaService extends BaseService<Alerta, Long, AlertaRepository> {
         return alertaRepository.existsByIdAndUsuarioAndAtivoTrue(id, usuario);
     }
 
-    private void validarAlerta(Alerta alerta) throws EntityNotValid {
+    private void validarAlerta(Alerta alerta) {
         if (alerta.getTipo() == null) {
-            throw new EntityNotValid("Tipo de alerta é obrigatório");
+            throw new IllegalArgumentException("Tipo de alerta é obrigatório");
         }
 
         switch (alerta.getTipo()) {
-
             case LIMITE_CATEGORIA:
                 if (alerta.getCategoria() == null) {
-                    throw new EntityNotValid("Categoria é obrigatória para alertas do tipo LIMITE_CATEGORIA");
+                    throw new IllegalArgumentException("Categoria é obrigatória para alertas do tipo LIMITE_CATEGORIA");
                 }
                 if (alerta.getLimiteValor() == null) {
-                    throw new EntityNotValid("Limite de valor é obrigatório para alertas do tipo LIMITE_CATEGORIA");
+                    throw new IllegalArgumentException("Limite de valor é obrigatório para alertas do tipo LIMITE_CATEGORIA");
                 }
                 break;
 
             case GASTO_ATIPICO:
                 if (alerta.getJanelaDias() == null) {
-                    throw new EntityNotValid("Janela de dias é obrigatória para alertas do tipo GASTO_ATIPICO");
+                    throw new IllegalArgumentException("Janela de dias é obrigatória para alertas do tipo GASTO_ATIPICO");
                 }
                 break;
 
             case SALDO_MINIMO:
                 if (alerta.getConta() == null) {
-                    throw new EntityNotValid("Conta é obrigatória para alertas do tipo SALDO_MINIMO");
+                    throw new IllegalArgumentException("Conta é obrigatória para alertas do tipo SALDO_MINIMO");
                 }
                 if (alerta.getLimiteValor() == null) {
-                    throw new EntityNotValid("Limite de valor é obrigatório para alertas do tipo SALDO_MINIMO");
+                    throw new IllegalArgumentException("Limite de valor é obrigatório para alertas do tipo SALDO_MINIMO");
                 }
                 break;
         }

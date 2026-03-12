@@ -11,7 +11,7 @@ import com.nucleo.repository.CategoriaRepository;
 import com.nucleo.security.SecurityUtils;
 import com.nucleo.service.CategoriaService;
 import com.nucleo.service.UsuarioService;
-import jakarta.persistence.EntityNotFoundException;
+import com.nucleo.exception.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
